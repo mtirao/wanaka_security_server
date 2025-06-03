@@ -1,0 +1,9 @@
+POST http://localhost:3000/api/wanaka/activity HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTc2MDgxNDAsInVzZXIiOiIzYmQyMzlkNC0wM2QxLTQ3Y2UtYWUyMC1kYjE1YjIzOTgwMTEifQ.cUbRe6V-S-5Ht1ymRvwErII6t4hiP-nLicwoO8cZ4uY
+
+{
+    "activityContent":"ArmedAway",
+    "activityDate":1752322712,
+    "activityUserID": "3bd239d4-03d1-47ce-ae20-db15b2398011"
+}

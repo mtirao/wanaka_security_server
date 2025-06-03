@@ -1,0 +1,73 @@
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE RecordWildCards       #-}
+{-# language DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+
+
+module MessageModel where
+
+import Data.Text 
+import Data.Aeson
+import GHC.Int
+import Data.UUID (UUID)
+import GHC.Generics (Generic)
+import Rel8 (DBType(..), ReadShow(..))
+
+data MessageType = Info | Fail | Warn | Alert
+    deriving (Eq, Enum, Bounded, Generic)
+    deriving stock (Read, Show)
+    deriving DBType via ReadShow MessageType
+
+
+instance FromJSON MessageType where
+    parseJSON = withText "MessageType" $ \t -> case t of
+        "Info"  -> pure Info
+        "Error" -> pure Fail
+        "Warn"  -> pure Warn
+        "Alert" -> pure Alert
+        _       -> fail $ "Unknown MessageType: " ++ show t
+
+instance ToJSON MessageType where
+    toJSON Info  = String "Info"
+    toJSON Fail = String "Error"
+    toJSON Warn  = String "Warn"
+    toJSON Alert = String "Alert"
+
+-- Message Request
+data MessageModel = MessageModel
+    { messageContent :: Text
+    ,  messageDate :: Int64
+    ,  messageType :: MessageType
+    , messageId :: Maybe UUID
+    } deriving (Show)
+
+instance FromJSON MessageModel where
+    parseJSON (Object v) = MessageModel <$>
+        v .: "messageContent" <*>
+        v .: "messageDate" <*>
+        v .: "messageType" <*>
+        v .:? "messageId"
+
+instance ToJSON MessageModel where
+    toJSON (MessageModel {..}) = object
+        [ "messageId" .= messageId
+        , "messageContent" .= messageContent
+        , "messageDate" .= messageDate
+        , "messageType" .= messageType
+        ]
+
+fromMessageType :: MessageType -> Text     
+fromMessageType Info  = "Info"
+fromMessageType Fail = "Error"
+fromMessageType Warn  = "Warn"
+fromMessageType Alert = "Alert"
+
+toMessageType :: Text -> Maybe MessageType
+toMessageType "Info"  = Just Info
+toMessageType "Error" = Just Fail
+toMessageType "Warn"  = Just Warn
+toMessageType "Alert" = Just Alert
+toMessageType _       = Nothing
