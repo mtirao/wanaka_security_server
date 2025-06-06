@@ -11,42 +11,23 @@ import MQTTNIO
 import Vapor
 
 
-let client = MQTTClient(
-    host: "192.168.0.56",
-    port: 1883,
-    identifier: "My Client",
-    eventLoopGroupProvider: .shared(.singletonMultiThreadedEventLoopGroup)
-)
-
-let connectFuture = client.connect()
-connectFuture.whenSuccess { _ in
-    print("Connected to MQTT broker")
-}
-connectFuture.whenFailure { error in
-    print("Failed to connect to MQTT broker: \(error)")
-}
-
-
 var env = try Environment.detect()
-    try LoggingSystem.bootstrap(from: &env)
-        
+try LoggingSystem.bootstrap(from: &env)
+
 let app = try await Application.make(env)
 
+// This attempts to install NIO as the Swift Concurrency global executor.
+// You can enable it if you'd like to reduce the amount of context switching between NIO and Swift Concurrency.
+// Note: this has caused issues with some libraries that use `.wait()` and cleanly shutting down.
+// If enabled, you should be careful about calling async functions before this point as it can cause assertion failures.
+// let executorTakeoverSuccess = NIOSingletons.unsafeTryInstallSingletonPosixEventLoopGroupAsConcurrencyGlobalExecutor()
+// app.logger.debug("Tried to install SwiftNIO's EventLoopGroup as Swift's global concurrency executor", metadata: ["success": .stringConvertible(executorTakeoverSuccess)])
 
-app.get("hello", ":name") { req async throws -> String in
-    // 2
-    let name = try req.parameters.require("name")
+do {
+    try await configure(app)
     
-    let greeting = "Hello, \(name.capitalized)!"
-
-    client.publish(to: "/topic/qos1", payload: ByteBuffer(string:greeting), qos: MQTTQoS.atLeastOnce ).whenSuccess { _ in
-        print("Published greeting to MQTT broker")
-    }
-    
-    return "Hello, \(name.capitalized)!"
-}
-
-do {   
+    app.routes.all
+        .forEach { app.logger.info("\($0)") }
     try await app.execute()
 } catch {
     app.logger.report(error: error)
