@@ -1,3 +1,0 @@
-GET http://localhost:8080/api/profile HTTP/1.1
-content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjY0MDkyMjExMjAwLCJhZG1pbiI6dHJ1ZSwic3ViIjoiQjM5QzEzM0EtOTcyRS00NkEwLTg2MDYtQjQxRDdGOEJGQzUxIn0.yPjtR0LEZ2_C5lcL8l6R9eyJkWUbY_LS3R8FxyIUgYs
