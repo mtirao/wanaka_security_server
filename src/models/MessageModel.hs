@@ -8,6 +8,7 @@ module MessageModel where
 import Data.Text 
 import Data.Aeson
 import GHC.Int
+import Data.UUID (UUID)
 
 
 -- Message Request
@@ -22,4 +23,13 @@ instance FromJSON MessageRequest where
         v .: "messageContent" <*>
         v .: "messageDate" <*>
         v .: "messageType"
+
+data MessageResponse = MessageResponse
+    { messageId :: UUID
+    } deriving (Show)
+
+instance ToJSON MessageResponse where
+    toJSON (MessageResponse {..}) = object
+        [ "messageId" .= messageId
+        ]
                 

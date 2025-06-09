@@ -60,6 +60,7 @@ executable wanaka-token
     , text
     , time
     , transformers
+    , uuid
     , wai
     , wai-extra
     , wai-middleware-static

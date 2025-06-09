@@ -39,8 +39,8 @@ createMessage conn =  do
             let message = MessageRequest (messageContent req) posixTime (messageType req)
             result <- liftIO $ insertMessage message conn
             case result of
-                Right _ -> do
-                    jsonResponse (SuccessMessage "Token created successfully")
+                Right [uuid] -> do
+                    jsonResponse $ MessageResponse uuid
                     status status201
                 Left err -> do
                     jsonResponse (ErrorMessage "Error inserting message ")

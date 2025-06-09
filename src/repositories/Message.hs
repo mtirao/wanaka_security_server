@@ -13,6 +13,8 @@ import Control.Monad.IO.Class
 import Data.Int (Int32, Int64)
 import Data.Text (Text, unpack, pack)
 import Data.Time (LocalTime)
+import Data.UUID (UUID) 
+import Data.UUID.V4 (nextRandom)
 import GHC.Generics (Generic)
 import Hasql.Connection (Connection, ConnectionError, acquire, release, settings)
 import Hasql.Session (QueryError, run, statement)
@@ -26,6 +28,7 @@ data Message f = Message
     {msgContent :: Column f Text
     , msgDate :: Column f Int64
     , msgType :: Column f Text
+    , msgId :: Column f UUID
     }
     deriving (Generic, Rel8able)
 
@@ -39,20 +42,22 @@ messageSchema = TableSchema
         { msgContent = "content"
         , msgDate = "date"
         , msgType= "type"
+        , msgId = "id"
         }
     }
 
 --Function
 -- INSERT
-insertMessage :: MessageRequest -> Connection -> IO (Either QueryError [Text])
+insertMessage :: MessageRequest -> Connection -> IO (Either QueryError [UUID])
 insertMessage p  conn = do
-                            run (statement () (insert1 p)) conn
+                            uuid <- nextRandom
+                            run (statement () (insert1 p uuid)) conn
 
-insert1 :: MessageRequest -> Statement () [Text]
-insert1 p = insert $ Insert
+insert1 :: MessageRequest -> UUID -> Statement () [UUID]
+insert1 p u = insert $ Insert
             { into = messageSchema
-            , rows = values [ Message (lit $ p.messageContent) (lit $ p.messageDate) (lit $ p.messageType) ]
-            , returning = Projection (.msgType)
+            , rows = values [ Message (lit $ p.messageContent) (lit $ p.messageDate) (lit $ p.messageType) (lit $ u) ]
+            , returning = Projection (.msgId)
             , onConflict = Abort
             }
 
