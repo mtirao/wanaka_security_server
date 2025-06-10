@@ -1,0 +1,2 @@
+GET http://localhost:3000/api/wanaka/message/fb28dd63-c057-43a6-a6cd-d9ffcd37d755 HTTP/1.1
+content-type: application/json

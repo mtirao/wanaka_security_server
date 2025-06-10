@@ -5,6 +5,7 @@ import Network.Wai.Middleware.RequestLogger (logStdoutDev, logStdout)
 import MessageController
 import Data.Text (Text, unpack, pack)
 import Data.Text.Encoding (encodeUtf8)
+import qualified Data.Text.Lazy as TL
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
 --import Hasql.Pool (Pool, acquire, use, release)
@@ -12,6 +13,7 @@ import qualified Hasql.Connection as S
 import Hasql.Session (Session)
 import qualified Hasql.Decoders as D
 import qualified Hasql.Encoders as E
+import Data.UUID (UUID)
 
 data DbConfig = DbConfig
     { dbName     :: String
@@ -51,6 +53,10 @@ main = do
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
                 Right pool -> scotty 3000 $ do
                     middleware logStdoutDev
+                    get "/api/wanaka/message/:id" $ do
+                        idd <- param "id" :: ActionM TL.Text
+                        let uuid = read (TL.unpack idd) :: UUID
+                        getMessage uuid pool
                     post "/api/wanaka/message" $ createMessage pool
         
 

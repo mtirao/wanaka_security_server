@@ -7,7 +7,7 @@
 {-# language StandaloneDeriving #-}
 {-# language TypeFamilies #-}
 
-module Message(insertMessage) where
+module Message(insertMessage, findMessage, toMessageDTO) where
 
 import Control.Monad.IO.Class
 import Data.Int (Int32, Int64)
@@ -47,6 +47,15 @@ messageSchema = TableSchema
     }
 
 --Function
+-- GET
+findMessage :: UUID -> Connection -> IO (Either QueryError [Message Result])
+findMessage id conn = do
+                            let query = select $ do
+                                            p <- each messageSchema
+                                            where_ $ (p.msgId ==. lit id)
+                                            return p
+                            run (statement () query ) conn
+
 -- INSERT
 insertMessage :: MessageRequest -> Connection -> IO (Either QueryError [UUID])
 insertMessage p  conn = do
@@ -60,5 +69,10 @@ insert1 p u = insert $ Insert
             , returning = Projection (.msgId)
             , onConflict = Abort
             }
+
+
+toMessageDTO :: Message Result -> MessageResponse
+toMessageDTO p = MessageResponse p.msgId (Just p.msgContent) (Just p.msgDate) (Just p.msgType)
+
 
 

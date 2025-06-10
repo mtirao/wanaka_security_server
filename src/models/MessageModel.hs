@@ -26,10 +26,16 @@ instance FromJSON MessageRequest where
 
 data MessageResponse = MessageResponse
     { messageId :: UUID
+    , content :: Maybe Text
+    , date :: Maybe Int64
+    , msgType :: Maybe Text
     } deriving (Show)
 
 instance ToJSON MessageResponse where
     toJSON (MessageResponse {..}) = object
-        [ "messageId" .= messageId
+        [ "id" .= messageId
+        , "content" .= content
+        , "date" .= date
+        , "type" .= msgType
         ]
                 
