@@ -19,11 +19,27 @@ extra-source-files:
 executable wanaka-token
   main-is: Main.hs
   other-modules:
+      ActivityController
+      AuthenticationController
       MessageController
+      ProfileController
+      StatusController
+      ActivityModel
       ErrorMessage
       MessageModel
+      ProfileModel
+      StatusModel
+      TenantsModel
+      TokenModel
       Views
+      Activity
       Message
+      Profile
+      Realm
+      Status
+      Tenant
+      Token
+      JwtAuth
       Paths_wanaka_token
   hs-source-dirs:
       ./
@@ -31,6 +47,7 @@ executable wanaka-token
       src/models
       src/views
       src/repositories
+      src/middleware
   default-extensions:
       DuplicateRecordFields
       DeriveAnyClass

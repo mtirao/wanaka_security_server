@@ -57,12 +57,12 @@ findMessage id conn = do
                             run (statement () query ) conn
 
 -- INSERT
-insertMessage :: MessageRequest -> Connection -> IO (Either QueryError [UUID])
+insertMessage :: MessageModel -> Connection -> IO (Either QueryError [UUID])
 insertMessage p  conn = do
                             uuid <- nextRandom
                             run (statement () (insert1 p uuid)) conn
 
-insert1 :: MessageRequest -> UUID -> Statement () [UUID]
+insert1 :: MessageModel -> UUID -> Statement () [UUID]
 insert1 p u = insert $ Insert
             { into = messageSchema
             , rows = values [ Message (lit $ p.messageContent) (lit $ p.messageDate) (lit $ p.messageType) (lit $ u) ]
@@ -71,8 +71,8 @@ insert1 p u = insert $ Insert
             }
 
 
-toMessageDTO :: Message Result -> MessageResponse
-toMessageDTO p = MessageResponse p.msgId (Just p.msgContent) (Just p.msgDate) (Just p.msgType)
+toMessageDTO :: Message Result -> MessageModel
+toMessageDTO p = MessageModel p.msgContent p.msgDate p.msgType (Just p.msgId)
 
 
 

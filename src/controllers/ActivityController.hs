@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageController(createMessage, getMessage) where
+module ActivityController(createActivity, getActivity) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -24,42 +24,42 @@ import GHC.Int
 
 import ErrorMessage
 import Views
-import Message
-import MessageModel
+import Activity
+import ActivityModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
 
 --- MESSAGE
 
-getMessage msgId conn = do
-                            result <- liftIO $ findMessage msgId conn
+getActivity msgId conn = do
+                            result <- liftIO $ findActivity msgId conn
                             case result of
                                     Right [] -> do
-                                            jsonResponse (ErrorMessage "User not found")
+                                            jsonResponse (ErrorMessage "Activity not found")
                                             status notFound404
                                     Right [a] -> do
-                                            jsonResponse $ toMessageDTO a
+                                            jsonResponse $ toActivityDTO a
     
 
-createMessage conn =  do
+createActivity conn =  do
     bodyContent <- body
-    let messageRequest = decode bodyContent :: Maybe MessageModel
+    let messageRequest = decode bodyContent :: Maybe ActivityModel
     case messageRequest of
         Just req -> do
             currentTime <- liftIO  getCurrentTime
             let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
-            let message = MessageModel (messageContent req) posixTime (messageType req) Nothing
-            result <- liftIO $ insertMessage message conn
+            let activity = ActivityModel (activityContent req) posixTime (activityUserId req) Nothing
+            result <- liftIO $ insertActivity activity conn
             case result of
                 Right [uuid] -> do
                     jsonResponse $ SuccessMessage $ pack $ toString uuid
                     status status201
                 Left err -> do
-                    jsonResponse (ErrorMessage "Error inserting message ")
+                    jsonResponse (ErrorMessage "Error inserting activity")
                     status internalServerError500
         Nothing -> do
             -- If the body cannot be parsed as MessageRequest, return an error
-            jsonResponse (ErrorMessage "Invalid message request format")
+            jsonResponse (ErrorMessage "Invalid activity request format")
             status badRequest400
     
 

@@ -12,6 +12,7 @@ source-dirs:
 - src/models
 - src/views
 - src/repositories
+- src/middleware
 extra-source-files:
 - README.md
 default-extensions:

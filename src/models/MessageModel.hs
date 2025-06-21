@@ -12,30 +12,25 @@ import Data.UUID (UUID)
 
 
 -- Message Request
-data MessageRequest = MessageRequest
+data MessageModel = MessageModel
     { messageContent :: Text
     ,  messageDate :: Int64
     ,  messageType :: Text
+    , messageId :: Maybe UUID
     } deriving (Show)
 
-instance FromJSON MessageRequest where
-    parseJSON (Object v) = MessageRequest <$>
+instance FromJSON MessageModel where
+    parseJSON (Object v) = MessageModel <$>
         v .: "messageContent" <*>
         v .: "messageDate" <*>
-        v .: "messageType"
+        v .: "messageType" <*>
+        v .:? "messageId"
 
-data MessageResponse = MessageResponse
-    { messageId :: UUID
-    , content :: Maybe Text
-    , date :: Maybe Int64
-    , msgType :: Maybe Text
-    } deriving (Show)
-
-instance ToJSON MessageResponse where
-    toJSON (MessageResponse {..}) = object
-        [ "id" .= messageId
-        , "content" .= content
-        , "date" .= date
-        , "type" .= msgType
+instance ToJSON MessageModel where
+    toJSON (MessageModel {..}) = object
+        [ "messageId" .= messageId
+        , "messageContent" .= messageContent
+        , "messageDate" .= messageDate
+        , "messageType" .= messageType
         ]
-                
+      
