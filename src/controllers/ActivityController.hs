@@ -32,13 +32,13 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 --- MESSAGE
 
 getActivity msgId conn = do
-                            result <- liftIO $ findActivity msgId conn
-                            case result of
-                                    Right [] -> do
-                                            jsonResponse (ErrorMessage "Activity not found")
-                                            status notFound404
-                                    Right [a] -> do
-                                            jsonResponse $ toActivityDTO a
+    result <- liftIO $ findActivity msgId conn
+    case result of
+        Right [] -> do
+                jsonResponse (ErrorMessage "Activity not found")
+                status notFound404
+        Right [a] -> do
+                jsonResponse $ toActivityDTO a
     
 
 createActivity conn =  do

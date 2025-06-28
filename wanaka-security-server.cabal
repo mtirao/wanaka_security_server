@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           wanaka-token
+name:           wanaka-security-server
 version:        0.1.0.0
 category:       Web
 homepage:       https://github.com/mtirao/wanaka_token#readme
@@ -16,7 +16,7 @@ build-type:     Simple
 extra-source-files:
     README.md
 
-executable wanaka-token
+executable wanaka-security-server
   main-is: Main.hs
   other-modules:
       ActivityController
@@ -40,7 +40,7 @@ executable wanaka-token
       Tenant
       Token
       JwtAuth
-      Paths_wanaka_token
+      Paths_wanaka_security_server
   hs-source-dirs:
       ./
       src/controllers

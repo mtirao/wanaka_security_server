@@ -34,6 +34,7 @@ userAuthenticate conn =  do
         maybeClientId<- header "x-client-id"
         maybeClientSecret <- header "x-client-secret"
         maybeGrantType <- header "x-grant-type"
+        liftIO $ print ("Headers: " <> show h <> " Client ID: " <> show maybeClientId <> " Client secret: " <> show maybeClientSecret <> " Grant type: " <> show maybeGrantType)
         case h >>= extractBasicAuth . T.encodeUtf8 . TL.toStrict of
             Just (user, password) -> do
                 let userText = T.decodeUtf8 user
@@ -61,8 +62,9 @@ userAuthenticate conn =  do
                                         [r] -> do
                                             let grantType = getGrantType r
                                             let clientid = toTenantDTO tenant
+                                            liftIO $ print ("Client ID: " <> clientid.userid )
                                             if TL.toStrict a == getClientId r then 
-                                                createJwt conn clientid.userid grantType
+                                                createJwt conn clientid.userid
                                             else do
                                                 jsonResponse (ErrorMessage "Invalid client secret")
                                                 status unauthorized401

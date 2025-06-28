@@ -76,17 +76,14 @@ main = do
                         let uuid = read (TL.unpack idd) :: UUID
                         getActivity uuid conn
                     post "/api/wanaka/activity" $ createActivity conn
-                    get "/api/wanaka/accounts/login" $ userAuthenticate conn
+
+                    -- AUTHENTICATION
+                    post "/api/wanaka/accounts/login" $ userAuthenticate conn
+
                     -- PROFILE
-                    get "/api/wanaka/profile/:id" $ do
-                        idd <- param "id" :: ActionM Text
-                        getProfile idd conn
+                    get "/api/wanaka/profile" $ getProfile conn
                     post "/api/wanaka/profile" $ createProfile body conn
-                    delete "/api/wanaka/profile/:id" $ do
-                        idd <- param "id" :: ActionM Text
-                        deleteUserProfile idd conn
-                    put "/api/wanaka/profile/:id" $ do
-                        idd <- param "id" :: ActionM Text
-                        updateUserProfile idd body conn
+                    delete "/api/wanaka/profile/:id" $ deleteUserProfile conn
+                    put "/api/wanaka/profile/:id" $ updateUserProfile body conn
 
 

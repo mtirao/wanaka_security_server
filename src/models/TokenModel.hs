@@ -1,6 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE RecordWildCards       #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 
@@ -56,4 +55,4 @@ instance ToJSON Payload where
 instance FromJSON Payload where
     parseJSON (Object v) = Payload <$>
         v .: "user" <*>
-        v .: "exp"                 
+        v .: "exp"             

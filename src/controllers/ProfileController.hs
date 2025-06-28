@@ -31,48 +31,70 @@ import ErrorMessage
 import Control.Lens (use)
 
 --- PROFILE
-getProfile userId conn =  do
-                            result <- liftIO $ findProfile userId conn
-                            case result of
-                                    Right [] -> do
-                                            jsonResponse (ErrorMessage "User not found")
-                                            status notFound404
-                                    Right [a] ->
-                                            jsonResponse $ toProfileDTO a
+getProfile conn =  do
+        userId <- header "x-user-id"
+        case userId of
+            Nothing -> do
+                jsonResponse (ErrorMessage "User ID not provided")
+                status badRequest400
+            Just uid -> do
+                let uid' = TL.toStrict uid
+                liftIO $ print ("Getting profile for user: " <> show uid')
+                result <- liftIO $ findProfile uid' conn
+                case result of
+                    Right [] -> do
+                        jsonResponse (ErrorMessage "User not found")
+                        status notFound404
+                    Right [a] ->
+                        jsonResponse $ toProfileDTO a
                                                  
 
 createProfile body conn =  do
         b <- body
         let profile = (decode b :: Maybe ProfileModel) 
         case profile of
-                Nothing -> status badRequest400
-                Just a -> do                   
-                            result <- liftIO $ insertProfile a conn
-                            case result of
-                                    Right [] -> do
-                                            jsonResponse (ErrorMessage "User can be created")
-                                            status forbidden403
-                                    Right [a] -> status noContent204
-                                                
-
-deleteUserProfile userId conn =  do
-                                    result <- liftIO $ deleteProfile userId conn
-                                    case result of
-                                            Right [] -> do
-                                                    jsonResponse (ErrorMessage "User not found")
-                                                    status notFound404
-                                            Right [a] -> status noContent204
-                                                
-
-updateUserProfile userId body conn =  do
-        b <- body
-        let profile = (decode b :: Maybe ProfileModel)
-        case profile of
             Nothing -> status badRequest400
-            Just p -> do
-                    result <- liftIO $ updateProfile userId p conn
-                    case result of
+            Just a -> do                   
+                result <- liftIO $ insertProfile a conn
+                case result of
+                    Right [] -> do
+                        jsonResponse (ErrorMessage "User can be created")
+                        status forbidden403
+                    Right [a] -> status noContent204
+                                                
+
+deleteUserProfile conn =  do
+        userId <- header "x-user-id"
+        case userId of
+            Nothing -> do
+                jsonResponse (ErrorMessage "User ID not provided")
+                status badRequest400
+            Just uid -> do
+                let uid' = TL.toStrict uid
+                result <- liftIO $ deleteProfile uid' conn
+                case result of
+                        Right [] -> do
+                                jsonResponse (ErrorMessage "User not found")
+                                status notFound404
+                        Right [a] -> status noContent204
+                                                
+
+updateUserProfile body conn =  do
+        userId <- header "x-user-id"
+        case userId of
+            Nothing -> do
+                jsonResponse (ErrorMessage "User ID not provided")
+                status badRequest400
+            Just uid -> do
+                let uid' = TL.toStrict uid
+                b <- body
+                let profile = (decode b :: Maybe ProfileModel)
+                case profile of
+                    Nothing -> status badRequest400
+                    Just p -> do
+                        result <- liftIO $ updateProfile uid' p conn
+                        case result of
                             Right [] -> do
-                                    jsonResponse (ErrorMessage "User not found")
-                                    status notFound404
+                                jsonResponse (ErrorMessage "User not found")
+                                status notFound404
                             Right [a] -> status noContent204

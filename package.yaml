@@ -1,4 +1,4 @@
-name: wanaka-token
+name: wanaka-security-server
 version: '0.1.0.0'
 category: Web
 author: Marcos Tirao
@@ -60,5 +60,5 @@ dependencies:
 - rel8
 - uuid
 executables:
-  wanaka-token:
+  wanaka-security-server:
     main: Main.hs

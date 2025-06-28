@@ -91,3 +91,4 @@ delete1 u  = delete $ Delete
 
 getClientId :: Token Result -> Text
 getClientId r = r.clientid
+
