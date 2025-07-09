@@ -7,7 +7,7 @@
 {-# language StandaloneDeriving #-}
 {-# language TypeFamilies #-}
 
-module Message(insertMessage, findMessage, toMessageDTO) where
+module Message(insertMessage, findMessage, findMessageAll, toMessageDTO) where
 
 import Control.Monad.IO.Class
 import Data.Int (Int32, Int64)
@@ -54,6 +54,11 @@ findMessage id conn = do
                                             p <- each messageSchema
                                             where_ $ (p.msgId ==. lit id)
                                             return p
+                            run (statement () query ) conn
+
+findMessageAll :: Connection -> IO (Either QueryError [Message Result])
+findMessageAll conn = do
+                            let query = select $ each messageSchema  
                             run (statement () query ) conn
 
 -- INSERT

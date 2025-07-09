@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageController(createMessage, getMessage) where
+module MessageController(createMessage, getMessage, getMessageAll) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -31,15 +31,24 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 
 --- MESSAGE
 
-getMessage msgId conn = do
-                            result <- liftIO $ findMessage msgId conn
+getMessageAll conn = do
+                            result <- liftIO $ findMessageAll conn
+                            case result of
+                                    Right [] -> do
+                                            jsonResponse (ErrorMessage "User not found")
+                                            status notFound404
+                                    Right a -> do
+                                            jsonResponse $ map toMessageDTO a
+
+getMessage u conn = do
+                            result <- liftIO $ findMessage u conn
                             case result of
                                     Right [] -> do
                                             jsonResponse (ErrorMessage "User not found")
                                             status notFound404
                                     Right [a] -> do
                                             jsonResponse $ toMessageDTO a
-    
+     
 
 createMessage conn =  do
     bodyContent <- body

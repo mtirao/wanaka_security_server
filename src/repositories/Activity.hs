@@ -7,7 +7,7 @@
 {-# language StandaloneDeriving #-}
 {-# language TypeFamilies #-}
 
-module Activity(insertActivity, findActivity, toActivityDTO) where
+module Activity(insertActivity, findActivity, findActivityAll, toActivityDTO) where
 
 import Control.Monad.IO.Class
 import Data.Int (Int32, Int64)
@@ -52,9 +52,14 @@ findActivity :: UUID -> Connection -> IO (Either QueryError [Activity Result])
 findActivity id conn = do
                             let query = select $ do
                                             p <- each activitySchema
-                                            where_ $ (p.actId ==. lit id)
+                                            where_ $ p.actId ==. lit id
                                             return p
                             run (statement () query ) conn
+
+findActivityAll :: Connection -> IO (Either QueryError [Activity Result])
+findActivityAll conn = do
+                        let query = select $ each activitySchema
+                        run (statement () query ) conn
 
 -- INSERT
 insertActivity :: ActivityModel -> Connection -> IO (Either QueryError [UUID])

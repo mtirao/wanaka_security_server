@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ActivityController(createActivity, getActivity) where
+module ActivityController(createActivity, getActivity, getActivityAll) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -40,7 +40,15 @@ getActivity msgId conn = do
         Right [a] -> do
                 jsonResponse $ toActivityDTO a
     
-
+getActivityAll conn = do
+    result <- liftIO $ findActivityAll conn
+    case result of
+        Right [] -> do
+            jsonResponse (ErrorMessage "No activities found")
+            status notFound404
+        Right activities -> do
+            jsonResponse $ map toActivityDTO activities
+    
 createActivity conn =  do
     bodyContent <- body
     let messageRequest = decode bodyContent :: Maybe ActivityModel

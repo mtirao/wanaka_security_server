@@ -70,11 +70,13 @@ main = do
                         idd <- param "id" :: ActionM TL.Text
                         let uuid = read (TL.unpack idd) :: UUID
                         getMessage uuid conn
+                    get "/api/wanaka/message" $ getMessageAll conn
                     post "/api/wanaka/message" $ createMessage conn
                     get "/api/wanaka/activity/:id" $ do
                         idd <- param "id" :: ActionM TL.Text
                         let uuid = read (TL.unpack idd) :: UUID
                         getActivity uuid conn
+                    get "/api/wanaka/activity" $ getActivityAll conn
                     post "/api/wanaka/activity" $ createActivity conn
 
                     -- AUTHENTICATION
