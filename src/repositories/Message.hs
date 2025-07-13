@@ -13,8 +13,9 @@ import Control.Monad.IO.Class
 import Data.Int (Int32, Int64)
 import Data.Text (Text, unpack, pack)
 import Data.Time (LocalTime)
-import Data.UUID (UUID) 
+import Data.UUID (UUID)
 import Data.UUID.V4 (nextRandom)
+import Data.Maybe
 import GHC.Generics (Generic)
 import Hasql.Connection (Connection, ConnectionError, acquire, release, settings)
 import Hasql.Session (QueryError, run, statement)
@@ -52,13 +53,13 @@ findMessage :: UUID -> Connection -> IO (Either QueryError [Message Result])
 findMessage id conn = do
                             let query = select $ do
                                             p <- each messageSchema
-                                            where_ $ (p.msgId ==. lit id)
+                                            where_ (p.msgId ==. lit id)
                                             return p
                             run (statement () query ) conn
 
 findMessageAll :: Connection -> IO (Either QueryError [Message Result])
 findMessageAll conn = do
-                            let query = select $ each messageSchema  
+                            let query = select $ each messageSchema
                             run (statement () query ) conn
 
 -- INSERT
@@ -70,14 +71,14 @@ insertMessage p  conn = do
 insert1 :: MessageModel -> UUID -> Statement () [UUID]
 insert1 p u = insert $ Insert
             { into = messageSchema
-            , rows = values [ Message (lit $ p.messageContent) (lit $ p.messageDate) (lit $ p.messageType) (lit $ u) ]
+            , rows = values [ Message (lit p.messageContent) (lit p.messageDate) (lit $ fromMessageType p.messageType) (lit u) ]
             , returning = Projection (.msgId)
             , onConflict = Abort
             }
 
 
 toMessageDTO :: Message Result -> MessageModel
-toMessageDTO p = MessageModel p.msgContent p.msgDate p.msgType (Just p.msgId)
+toMessageDTO p = MessageModel p.msgContent p.msgDate (fromMaybe Info (toMessageType p.msgType)) (Just p.msgId)
 
 
 

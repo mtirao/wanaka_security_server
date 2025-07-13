@@ -22,6 +22,7 @@ data ProfileModel = ProfileModel
     , gender :: Text
     , address :: Text
     , city :: Text
+    , profileId :: Maybe Text  -- Assuming profileId is a UUID stored as Text
     } deriving (Show)
 
 instance ToJSON ProfileModel where
@@ -33,7 +34,8 @@ instance ToJSON ProfileModel where
             "phone" .= phone,
             "gender" .= gender,
             "address" .= address,
-            "city" .= city
+            "city" .= city,
+            "profileid" .= profileId
         ]
 
 instance FromJSON ProfileModel where
@@ -45,4 +47,5 @@ instance FromJSON ProfileModel where
         v .:  "phone" <*>
         v .: "gender" <*>
         v .: "address" <*>
-        v .: "city"
+        v .: "city" <*>
+        v .:? "profileId"

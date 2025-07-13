@@ -28,26 +28,27 @@ import Message
 import MessageModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
+import Activity
 
 --- MESSAGE
 
 getMessageAll conn = do
-                            result <- liftIO $ findMessageAll conn
-                            case result of
-                                    Right [] -> do
-                                            jsonResponse (ErrorMessage "User not found")
-                                            status notFound404
-                                    Right a -> do
-                                            jsonResponse $ map toMessageDTO a
+                        result <- liftIO $ findMessageAll conn
+                        case result of
+                                Right [] -> do
+                                        jsonResponse (ErrorMessage "User not found")
+                                        status notFound404
+                                Right a -> do
+                                        jsonResponse $ map toMessageDTO a
 
 getMessage u conn = do
-                            result <- liftIO $ findMessage u conn
-                            case result of
-                                    Right [] -> do
-                                            jsonResponse (ErrorMessage "User not found")
-                                            status notFound404
-                                    Right [a] -> do
-                                            jsonResponse $ toMessageDTO a
+                        result <- liftIO $ findMessage u conn
+                        case result of
+                                Right [] -> do
+                                        jsonResponse (ErrorMessage "User not found")
+                                        status notFound404
+                                Right [a] -> do
+                                        jsonResponse $ toMessageDTO a
      
 
 createMessage conn =  do
@@ -60,9 +61,16 @@ createMessage conn =  do
             let message = MessageModel (messageContent req) posixTime (messageType req) Nothing
             result <- liftIO $ insertMessage message conn
             case result of
-                Right [uuid] -> do
-                    jsonResponse $ SuccessMessage $ pack $ toString uuid
-                    status status201
+                Right [uuid] -> do 
+                    systemArmed <- liftIO $ isSystemArmed conn
+                    if systemArmed
+                    then do
+                        liftIO $ triggerAlert req
+                        jsonResponse $ SuccessMessage $ pack $ toString uuid
+                        status status201
+                    else do
+                        jsonResponse (ErrorMessage "System is not armed")
+                        status internalServerError500
                 Left err -> do
                     jsonResponse (ErrorMessage "Error inserting message ")
                     status internalServerError500
@@ -71,4 +79,11 @@ createMessage conn =  do
             jsonResponse (ErrorMessage "Invalid message request format")
             status badRequest400
     
-
+triggerAlert :: MessageModel -> IO ()
+triggerAlert message = do 
+            if message.messageType == Alert
+            then do
+                -- Logic to trigger alert
+                putStrLn $ "Alert triggered for message: " ++ show message
+            else do
+                putStrLn $ "No alert for message: " ++ show message

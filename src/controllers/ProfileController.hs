@@ -20,15 +20,15 @@ import qualified Data.Text as T
 
 import Data.Time
 import Data.Time.Clock.POSIX
-
+import Data.UUID.V4 (nextRandom)
+import Data.Maybe
+import Data.Aeson
 import GHC.Int
 
 import Network.HTTP.Types.Status
 
-import Data.Aeson
-
 import ErrorMessage
-import Control.Lens (use)
+
 
 --- PROFILE
 getProfile conn =  do
@@ -51,11 +51,13 @@ getProfile conn =  do
 
 createProfile body conn =  do
         b <- body
+        uuid <- liftIO nextRandom
+        let profileId = Just $ T.pack $ show uuid
         let profile = (decode b :: Maybe ProfileModel) 
         case profile of
             Nothing -> status badRequest400
             Just a -> do                   
-                result <- liftIO $ insertProfile a conn
+                result <- liftIO $ insertProfile a (fromMaybe "" profileId) conn
                 case result of
                     Right [] -> do
                         jsonResponse (ErrorMessage "User can be created")

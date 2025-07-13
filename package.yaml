@@ -59,6 +59,7 @@ dependencies:
 - hasql-pool
 - rel8
 - uuid
+- base-prelude
 executables:
   wanaka-security-server:
     main: Main.hs

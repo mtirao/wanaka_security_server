@@ -10,6 +10,7 @@
 module Profile (findProfile, toProfileDTO, insertProfile, deleteProfile, updateProfile) where
 
 import Control.Monad.IO.Class
+import Data.Maybe (fromMaybe)
 import Data.Int (Int32, Int64)
 import Data.Text (Text, unpack, pack)
 import qualified Data.Text.Lazy as TL
@@ -23,6 +24,7 @@ import Rel8
 import Prelude hiding (filter, null)
 
 import ProfileModel
+import Data.UUID (UUID, toText)
 
 -- Rel8 Schemma Definitions
 data Profile f = Profile
@@ -63,50 +65,47 @@ findProfile :: Text -> Connection -> IO (Either QueryError [Profile Result])
 findProfile userId conn = do
                             let query = select $ do
                                             p <- each profileSchema
-                                            where_ $ (p.userId ==. lit userId)
+                                            where_ (p.userId ==. lit userId)
                                             return p
                             run (statement () query ) conn
 
 -- INSERT
-insertProfile :: ProfileModel -> Connection -> IO (Either QueryError [Text])
-insertProfile p  conn = do
-                            run (statement () (insert1 p)) conn
+insertProfile :: ProfileModel -> Text -> Connection -> IO (Either QueryError [Text])
+insertProfile p u = run (statement () (insert1 p u))
 
-insert1 :: ProfileModel -> Statement () [Text]
-insert1 p = insert $ Insert
+insert1 :: ProfileModel -> Text -> Statement () [Text]
+insert1 p u = insert $ Insert
             { into = profileSchema
-            , rows = values [ Profile (lit $ p.cellPhone) (lit $ p.email) (lit $ p.firstName) (lit $ p.lastName) (lit $ p.phone) (lit $ p.gender) (lit $ p.address) (lit $ p.city) ""]
+            , rows = values [ Profile (lit p.cellPhone) (lit p.email) (lit p.firstName) (lit p.lastName) (lit p.phone) (lit p.gender) (lit p.address) (lit p.city) (lit u) ]
             , returning = Projection (.userId)
             , onConflict = Abort
             }
 
 -- DELETE
 deleteProfile :: Text -> Connection -> IO (Either QueryError [Text])
-deleteProfile u conn = do
-                        run (statement () (delete1 u )) conn
+deleteProfile u = run (statement () (delete1 u ))
 
 delete1 :: Text -> Statement () [Text]
 delete1 u  = delete $ Delete
             { from = profileSchema
             , using = pure ()
-            , deleteWhere = \t ui -> (ui.userId ==. lit u)
+            , deleteWhere = \t ui -> ui.userId ==. lit u
             , returning = Projection (.userId)
             }
 
 -- UPDATE
 updateProfile :: Text -> ProfileModel -> Connection -> IO (Either QueryError [Text])
-updateProfile u p conn = do
-                        run (statement () (update1 u p)) conn
+updateProfile u p = run (statement () (update1 u p))
 
 update1 :: Text -> ProfileModel -> Statement () [Text]
 update1 u p  = update $ Update
             { target = profileSchema
             , from = pure ()
-            , set = \_ row -> Profile (lit $ p.cellPhone) (lit $ p.email) (lit $ p.firstName) (lit $ p.lastName) (lit $ p.phone) (lit $ p.gender) (lit $ p.address) (lit $ p.city) row.userId
-            , updateWhere = \t ui -> (ui.userId ==. lit u)
+            , set = \_ row -> Profile (lit p.cellPhone) (lit p.email) (lit p.firstName) (lit p.lastName) (lit p.phone) (lit p.gender) (lit p.address) (lit p.city) row.userId
+            , updateWhere = \t ui -> ui.userId ==. lit u
             , returning = Projection (.userId)
             }
 
 -- Helpers
 toProfileDTO :: Profile Result -> ProfileModel
-toProfileDTO p = ProfileModel  p.cellPhone p.email p.firstName p.lastName p.phone p.gender p.address  p.city
+toProfileDTO p = ProfileModel  p.cellPhone p.email p.firstName p.lastName p.phone p.gender p.address  p.city (Just p.userId)

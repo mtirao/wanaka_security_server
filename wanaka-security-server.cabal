@@ -61,6 +61,7 @@ executable wanaka-security-server
       MissingH
     , aeson
     , base >=4.14.3.0
+    , base-prelude
     , bytestring
     , bytestring-conversion
     , configurator

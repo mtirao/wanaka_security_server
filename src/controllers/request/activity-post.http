@@ -1,9 +1,9 @@
-POST http://localhost:3000/api/wanaka/message HTTP/1.1
+POST http://localhost:3000/api/wanaka/activity HTTP/1.1
 content-type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTMxODY5MTEsInVzZXIiOiIzYmQyMzlkNC0wM2QxLTQ3Y2UtYWUyMC1kYjE1YjIzOTgwMTEifQ.QpHJEL9hQzaivZvnVlnil4nmiysOMu17rGyNRO7yMzY
 
 {
-  "messageContent": "Something happened",
-  "messageDate" : 12345678,     
-  "messageType": "info"
+    "activityContent":"away",
+    "activityDate":1752322712,
+    "activityType":"arming"
 }
