@@ -62,15 +62,15 @@ createMessage conn =  do
             result <- liftIO $ insertMessage message conn
             case result of
                 Right [uuid] -> do 
-                    systemArmed <- liftIO $ isSystemArmed conn
+                    systemArmed <- liftIO $ isSystemArmed req.messageType conn
                     if systemArmed
                     then do
-                        liftIO $ triggerAlert req
+                        liftIO $ putStrLn $ "Alerting system with message type: " ++ show req.messageType
                         jsonResponse $ SuccessMessage $ pack $ toString uuid
                         status status201
                     else do
                         jsonResponse (ErrorMessage "System is not armed")
-                        status internalServerError500
+                        status status201
                 Left err -> do
                     jsonResponse (ErrorMessage "Error inserting message ")
                     status internalServerError500
@@ -79,11 +79,3 @@ createMessage conn =  do
             jsonResponse (ErrorMessage "Invalid message request format")
             status badRequest400
     
-triggerAlert :: MessageModel -> IO ()
-triggerAlert message = do 
-            if message.messageType == Alert
-            then do
-                -- Logic to trigger alert
-                putStrLn $ "Alert triggered for message: " ++ show message
-            else do
-                putStrLn $ "No alert for message: " ++ show message

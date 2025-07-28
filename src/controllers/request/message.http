@@ -1,9 +1,9 @@
 POST http://localhost:3000/api/wanaka/message HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTMxODY5MTEsInVzZXIiOiIzYmQyMzlkNC0wM2QxLTQ3Y2UtYWUyMC1kYjE1YjIzOTgwMTEifQ.QpHJEL9hQzaivZvnVlnil4nmiysOMu17rGyNRO7yMzY
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTM0NzA1MTIsInVzZXIiOiIzYmQyMzlkNC0wM2QxLTQ3Y2UtYWUyMC1kYjE1YjIzOTgwMTEifQ.cdQ8FX3P3pKYC3U_UHiyAeNCaUEqb99PmUOtJAJxNBI
 
 {
   "messageContent": "Something happened",
   "messageDate" : 12345678,     
-  "messageType": "info"
+  "messageType": "Alert"
 }

@@ -1,5 +1,9 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE RecordWildCards       #-}
+{-# language DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 
@@ -9,22 +13,28 @@ import Data.Text
 import Data.Aeson
 import GHC.Int
 import Data.UUID (UUID)
+import GHC.Generics (Generic)
+import Rel8 (DBType(..), ReadShow(..))
 
-data MessageType = Info | Fail | Warn | Alert deriving (Show, Enum, Eq)
+data MessageType = Info | Fail | Warn | Alert
+    deriving (Eq, Enum, Bounded, Generic)
+    deriving stock (Read, Show)
+    deriving DBType via ReadShow MessageType
+
 
 instance FromJSON MessageType where
     parseJSON = withText "MessageType" $ \t -> case t of
-        "info"  -> pure Info
-        "error" -> pure Fail
-        "warn"  -> pure Warn
-        "alert" -> pure Alert
+        "Info"  -> pure Info
+        "Error" -> pure Fail
+        "Warn"  -> pure Warn
+        "Alert" -> pure Alert
         _       -> fail $ "Unknown MessageType: " ++ show t
 
 instance ToJSON MessageType where
-    toJSON Info  = String "info"
-    toJSON Fail = String "error"
-    toJSON Warn  = String "warn"
-    toJSON Alert = String "alert"
+    toJSON Info  = String "Info"
+    toJSON Fail = String "Error"
+    toJSON Warn  = String "Warn"
+    toJSON Alert = String "Alert"
 
 -- Message Request
 data MessageModel = MessageModel
