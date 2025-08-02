@@ -1,5 +1,5 @@
 GET http://localhost:3000/api/wanaka/profile HTTP/1.1
 content-type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTMyNzM1NDEsInVzZXIiOiIzYmQyMzlkNC0wM2QxLTQ3Y2UtYWUyMC1kYjE1YjIzOTgwMTEifQ._V6_RqrpczeZc4AXZ9cv-nfSCWRoJUlhVh4ibXtVE7Q
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NTUwMDI5NDAsInVzZXIiOiIzYmQyMzlkNC0wM2QxLTQ3Y2UtYWUyMC1kYjE1YjIzOTgwMTEifQ.dM8gXQKSYngI59l49TZjkwADcze6tRMvZKKsHGeIHHI
 
 

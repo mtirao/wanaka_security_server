@@ -29,8 +29,7 @@ import ActivityModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
 
---- MESSAGE
-
+--- ACTIVITY
 getActivity msgId conn = do
     result <- liftIO $ findActivity msgId conn
     case result of

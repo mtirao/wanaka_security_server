@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageController(createMessage, getMessage, getMessageAll) where
+module MessageController(createMessage, getMessage, getMessageAll, getSystemStatus) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -17,11 +17,8 @@ import qualified Data.Text.Lazy.Encoding as TL
 import qualified Data.ByteString.Lazy.Internal as BL
 import qualified Data.ByteString.Internal as BI
 import qualified Data.Text.Encoding as T
-
 import Control.Monad.IO.Class
-
 import GHC.Int
-
 import ErrorMessage
 import Views
 import Message
@@ -29,9 +26,20 @@ import MessageModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
 import Activity
+import Hasql.Decoders (custom)
 
 --- MESSAGE
 
+getSystemStatus conn = do
+    armed <- liftIO $ isSystemArmed conn
+    if armed
+        then do
+            jsonResponse (SuccessMessage "System is armed")
+            status ok200
+        else do
+            jsonResponse (ErrorMessage "System is not armed")
+            status badRequest400
+    
 getMessageAll conn = do
                         result <- liftIO $ findMessageAll conn
                         case result of
@@ -62,7 +70,7 @@ createMessage conn =  do
             result <- liftIO $ insertMessage message conn
             case result of
                 Right [uuid] -> do 
-                    systemArmed <- liftIO $ isSystemArmed req.messageType conn
+                    systemArmed <- liftIO $ isSystemArmed conn
                     if systemArmed
                     then do
                         liftIO $ putStrLn $ "Alerting system with message type: " ++ show req.messageType

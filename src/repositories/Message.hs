@@ -82,12 +82,12 @@ triggerAlert :: MessageType -> IO ()
 triggerAlert m = if m == Alert
 then do
     -- Logic to trigger alert
-    putStrLn $ "Alert triggered"
+    putStrLn "Alert triggered"
 else do
-    putStrLn $ "No alert"
+    putStrLn "No alert"
 
-isSystemArmed :: MessageType  -> Connection -> IO Bool
-isSystemArmed m conn = do
+isSystemArmed :: Connection -> IO Bool
+isSystemArmed conn = do
                         result <- lastActivityQuery conn
                         case result of
                             Left _ -> return False
