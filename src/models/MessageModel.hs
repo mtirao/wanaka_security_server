@@ -60,14 +60,14 @@ instance ToJSON MessageModel where
         ]
 
 fromMessageType :: MessageType -> Text     
-fromMessageType Info  = "info"
-fromMessageType Fail = "error"
-fromMessageType Warn  = "warn"
-fromMessageType Alert = "alert"
+fromMessageType Info  = "Info"
+fromMessageType Fail = "Error"
+fromMessageType Warn  = "Warn"
+fromMessageType Alert = "Alert"
 
 toMessageType :: Text -> Maybe MessageType
-toMessageType "info"  = Just Info
-toMessageType "error" = Just Fail
-toMessageType "warn"  = Just Warn
-toMessageType "alert" = Just Alert
+toMessageType "Info"  = Just Info
+toMessageType "Error" = Just Fail
+toMessageType "Warn"  = Just Warn
+toMessageType "Alert" = Just Alert
 toMessageType _       = Nothing

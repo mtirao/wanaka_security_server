@@ -27,6 +27,7 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 
 import Activity
 import Hasql.Decoders (custom)
+import Control.Lens.Internal.TH (prismTypeName)
 
 --- MESSAGE
 
@@ -41,10 +42,11 @@ getSystemStatus conn = do
             status badRequest400
     
 getMessageAll conn = do
+                        liftIO $ print "Fetching all messages"
                         result <- liftIO $ findMessageAll conn
                         case result of
                                 Right [] -> do
-                                        jsonResponse (ErrorMessage "User not found")
+                                        jsonResponse (ErrorMessage "Messages not found")
                                         status notFound404
                                 Right a -> do
                                         jsonResponse $ map toMessageDTO a
