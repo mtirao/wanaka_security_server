@@ -51,13 +51,14 @@ createJwt conn clientid = do
 jwtAuthMiddleware :: Connection -> Middleware
 jwtAuthMiddleware conn app req respond =
                 let url = rawPathInfo req <> rawQueryString req
-                in if url == "/api/wanaka/accounts/login"
+                in
+                    if url == "/api/wanaka/accounts/login" || url == "/api/wanaka/message"
                     then app req respond
                     else case lookup "authorization" (requestHeaders req) of
                         Just bs -> do
                             let tokenBs = TL.toStrict $ Data.Maybe.fromMaybe
-                                  (TL.fromStrict (T.decodeUtf8 bs))
-                                  (TL.stripPrefix "Bearer " (TL.fromStrict (T.decodeUtf8 bs)))
+                                    (TL.fromStrict (T.decodeUtf8 bs))
+                                    (TL.stripPrefix "Bearer " (TL.fromStrict (T.decodeUtf8 bs)))
                             result <- liftIO $ Tkn.findToken tokenBs conn
                             liftIO $ print ("Checking token: " <> show (T.decodeUtf8 bs))
                             case result of
@@ -77,7 +78,6 @@ jwtAuthMiddleware conn app req respond =
                                                     app req' respond
                                                 else 
                                                     respond $ responseLBS status401 [] "Unauthorized"
-                                        
                         _ ->
                             respond $ responseLBS status401 [] "Unauthorized"
 
