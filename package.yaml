@@ -14,8 +14,13 @@ source-dirs:
 - src/repositories
 - src/middleware
 - src/mqtt
+- src/util
 extra-source-files:
 - README.md
+extra-lib-dirs:
+- c_src
+extra-libraries:
+- myfunc
 default-extensions:
 - DuplicateRecordFields
 - DeriveAnyClass
