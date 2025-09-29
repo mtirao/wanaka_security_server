@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -40,6 +40,7 @@ executable wanaka-security-server
       Tenant
       Token
       JwtAuth
+      Mqtt
       Paths_wanaka_security_server
   hs-source-dirs:
       ./
@@ -48,6 +49,7 @@ executable wanaka-security-server
       src/views
       src/repositories
       src/middleware
+      src/mqtt
   default-extensions:
       DuplicateRecordFields
       DeriveAnyClass
@@ -71,6 +73,8 @@ executable wanaka-security-server
     , jose-jwt
     , lens
     , lens-aeson
+    , net-mqtt
+    , network-uri
     , postgresql-simple
     , rel8
     , resource-pool

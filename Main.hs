@@ -7,6 +7,7 @@ import Data.Text (Text, unpack, pack)
 import Data.Text.Encoding (encodeUtf8)
 import Data.UUID (UUID)
 import Control.Monad.IO.Class
+import Control.Concurrent (forkIO)
 
 import qualified Data.Text.Lazy as TL
 import qualified Data.Configurator as C
@@ -17,12 +18,13 @@ import Hasql.Session (Session)
 import qualified Hasql.Decoders as D
 import qualified Hasql.Encoders as E
 
-
 import MessageController
 import ActivityController
 import AuthenticationController
 import ProfileController
 import JwtAuth
+import Mqtt
+
 
 data DbConfig = DbConfig
     { dbName     :: String
@@ -31,7 +33,6 @@ data DbConfig = DbConfig
     , dbHost     :: String
     , dbPort     :: Int
     }
-
 
 
 makeDbConfig :: C.Config -> IO (Maybe DbConfig)
@@ -63,35 +64,37 @@ main = do
             result <- S.acquire connSettings
             case result of
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
-                Right conn -> scotty 3000 $ do
-                    middleware logStdoutDev
-                    middleware (jwtAuthMiddleware conn)
-                    -- MESSAGE
-                    get "/api/wanaka/message/:id" $ do
-                        idd <- param "id" :: ActionM TL.Text
-                        let uuid = read (TL.unpack idd) :: UUID
-                        getMessage uuid conn
-                    get "/api/wanaka/message" $ getMessageAll conn
-                    post "/api/wanaka/message" $ createMessage conn
+                Right conn -> do 
+                    _ <- forkIO $ mqttSubscribe conn
+                    scotty 3000 $ do
+                        middleware logStdoutDev
+                        middleware (jwtAuthMiddleware conn)
+                        -- MESSAGE
+                        get "/api/wanaka/message/:id" $ do
+                            idd <- param "id" :: ActionM TL.Text
+                            let uuid = read (TL.unpack idd) :: UUID
+                            getMessage uuid conn
+                        get "/api/wanaka/message" $ getMessageAll conn
+                        post "/api/wanaka/message" $ createMessage conn
 
-                    -- ACTIVITY
-                    get "/api/wanaka/activity/:id" $ do
-                        idd <- param "id" :: ActionM TL.Text
-                        let uuid = read (TL.unpack idd) :: UUID
-                        getActivity uuid conn
-                    get "/api/wanaka/activity" $ getActivityAll conn
-                    post "/api/wanaka/activity" $ createActivity conn
+                        -- ACTIVITY
+                        get "/api/wanaka/activity/:id" $ do
+                            idd <- param "id" :: ActionM TL.Text
+                            let uuid = read (TL.unpack idd) :: UUID
+                            getActivity uuid conn
+                        get "/api/wanaka/activity" $ getActivityAll conn
+                        post "/api/wanaka/activity" $ createActivity conn
 
-                    -- SYSTEM STATUS
-                    get "/api/wanaka/status" $ getSystemStatus conn
+                        -- SYSTEM STATUS
+                        get "/api/wanaka/status" $ getSystemStatus conn
 
-                    -- AUTHENTICATION
-                    post "/api/wanaka/accounts/login" $ userAuthenticate conn
+                        -- AUTHENTICATION
+                        post "/api/wanaka/accounts/login" $ userAuthenticate conn
 
-                    -- PROFILE
-                    get "/api/wanaka/profile" $ getProfile conn
-                    post "/api/wanaka/profile" $ createProfile body conn
-                    delete "/api/wanaka/profile/:id" $ deleteUserProfile conn
-                    put "/api/wanaka/profile/:id" $ updateUserProfile body conn
+                        -- PROFILE
+                        get "/api/wanaka/profile" $ getProfile conn
+                        post "/api/wanaka/profile" $ createProfile body conn
+                        delete "/api/wanaka/profile/:id" $ deleteUserProfile conn
+                        put "/api/wanaka/profile/:id" $ updateUserProfile body conn
 
 

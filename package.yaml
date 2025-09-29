@@ -13,6 +13,7 @@ source-dirs:
 - src/views
 - src/repositories
 - src/middleware
+- src/mqtt
 extra-source-files:
 - README.md
 default-extensions:
@@ -60,6 +61,8 @@ dependencies:
 - rel8
 - uuid
 - base-prelude
+- net-mqtt
+- network-uri
 executables:
   wanaka-security-server:
     main: Main.hs
