@@ -1,4 +1,5 @@
 .DS_Store
+.stack-work/
 /.build
 /Packages
 xcuserdata/
