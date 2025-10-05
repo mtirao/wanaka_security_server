@@ -40,6 +40,8 @@ executable wanaka-security-server
       Tenant
       Token
       JwtAuth
+      Mqtt
+      MyFFI
       Paths_wanaka_security_server
   hs-source-dirs:
       ./
@@ -48,6 +50,8 @@ executable wanaka-security-server
       src/views
       src/repositories
       src/middleware
+      src/mqtt
+      src/util
   default-extensions:
       DuplicateRecordFields
       DeriveAnyClass
@@ -57,6 +61,10 @@ executable wanaka-security-server
       TemplateHaskell
       QuasiQuotes
   ghc-options: -threaded -O2 -rtsopts -with-rtsopts=-N -Wno-deprecations -Wno-unused-imports -Wno-type-equality-out-of-scope -Wno-type-equality-requires-operators
+  extra-lib-dirs:
+      c_src
+  extra-libraries:
+      myfunc
   build-depends:
       MissingH
     , aeson
@@ -71,6 +79,8 @@ executable wanaka-security-server
     , jose-jwt
     , lens
     , lens-aeson
+    , net-mqtt
+    , network-uri
     , postgresql-simple
     , rel8
     , resource-pool

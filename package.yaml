@@ -13,8 +13,14 @@ source-dirs:
 - src/views
 - src/repositories
 - src/middleware
+- src/mqtt
+- src/util
 extra-source-files:
 - README.md
+extra-lib-dirs:
+- c_src
+extra-libraries:
+- myfunc
 default-extensions:
 - DuplicateRecordFields
 - DeriveAnyClass
@@ -60,6 +66,8 @@ dependencies:
 - rel8
 - uuid
 - base-prelude
+- net-mqtt
+- network-uri
 executables:
   wanaka-security-server:
     main: Main.hs
