@@ -89,6 +89,7 @@ executable wanaka-security-server
     , text
     , time
     , transformers
+    , unix
     , uuid
     , wai
     , wai-extra

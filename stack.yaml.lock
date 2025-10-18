@@ -60,6 +60,13 @@ packages:
       size: 1131
   original:
     hackage: net-mqtt-0.8.6.2
+- completed:
+    hackage: unix-2.8.4.0@sha256:3532cdc3569087e33c193062498df3c0da1022cc997b1815b6a8a0ea5deb45eb,9351
+    pantry-tree:
+      sha256: f1a712e3f9fc6359ceae2cae607cb34c2f898c07119dac3440b4ba2423e2c5b1
+      size: 5821
+  original:
+    hackage: unix-2.8.4.0
 snapshots:
 - completed:
     sha256: 1e32b51d9082fdf6f3bd92accc9dfffd4ddaf406404427fb10bf76d2bc03cbbb

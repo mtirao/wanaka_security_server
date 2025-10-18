@@ -8,8 +8,9 @@ import Data.Text.Encoding (encodeUtf8)
 import Data.UUID (UUID)
 import Control.Monad.IO.Class
 import Control.Concurrent( forkIO, killThread)
-import System.Posix.Signals (installHandler, keyboardSignal, sigTERM, Handler(Catch))
-import System.Exit (exitSuccess)
+import System.Posix.Process (exitImmediately)
+import System.Posix.Signals (installHandler, keyboardSignal, sigTERM, sigKILL, Handler(Catch))
+import System.Exit (ExitCode(ExitSuccess))
 
 import qualified Data.Text.Lazy as TL
 import qualified Data.Configurator as C
@@ -69,7 +70,7 @@ main = do
             case result of
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
                 Right conn -> do 
-                    _ <- forkIO $ mqttSubscribe conn
+                    mqttTid <- forkIO $ mqttSubscribe conn
                     _ <- gpioInfo True
                     let cleanup = do
                           putStrLn "Shutting down..."
@@ -79,7 +80,7 @@ main = do
                           S.release conn
                           gpioInfo False
                           putStrLn "Cleanup complete."
-                          exitSuccess
+                          exitImmediately ExitSuccess
                      -- install handlers for SIGINT (Ctrl-C) and SIGTERM
                     _ <- installHandler keyboardSignal (Catch cleanup) Nothing
                     _ <- installHandler sigTERM (Catch cleanup) Nothing

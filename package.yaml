@@ -67,6 +67,7 @@ dependencies:
 - uuid
 - base-prelude
 - net-mqtt
+- unix
 - network-uri
 executables:
   wanaka-security-server:
