@@ -42,6 +42,7 @@ executable wanaka-security-server
       JwtAuth
       Mqtt
       GPIO
+      RpiDevice
       Paths_wanaka_security_server
   hs-source-dirs:
       ./
@@ -62,10 +63,8 @@ executable wanaka-security-server
       QuasiQuotes
   ghc-options: -threaded -O2 -rtsopts -with-rtsopts=-N -Wno-deprecations -Wno-unused-imports -Wno-type-equality-out-of-scope -Wno-type-equality-requires-operators
   extra-lib-dirs:
-      c_src
       /usr/local/lib
   extra-libraries:
-      myfunc
       bcm2835
   build-depends:
       MissingH

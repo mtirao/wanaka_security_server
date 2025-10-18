@@ -7,7 +7,9 @@ import Data.Text (Text, unpack, pack)
 import Data.Text.Encoding (encodeUtf8)
 import Data.UUID (UUID)
 import Control.Monad.IO.Class
-import Control.Concurrent (forkIO)
+import Control.Concurrent( forkIO, killThread)
+import System.Posix.Signals (installHandler, keyboardSignal, sigTERM, Handler(Catch))
+import System.Exit (exitSuccess)
 
 import qualified Data.Text.Lazy as TL
 import qualified Data.Configurator as C
@@ -49,7 +51,7 @@ makeDbConfig conf = do
                       <*> dbConfPassword
                       <*> dbConfHost
                       <*> dbConfPort
-                
+
 
 main :: IO ()
 main = do
@@ -66,9 +68,22 @@ main = do
             result <- S.acquire connSettings
             case result of
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
-                Right conn -> do 
-                    _ <- forkIO $ mqttSubscribe conn
+                Right conn -> do
+                    mqttTid <- forkIO $ mqttSubscribe conn
                     _ <- gpioInfo True
+                    let cleanup = do
+                          putStrLn "Shutting down..."
+                          -- stop background threads if any
+                          killThread mqttTid
+                          -- release DB connection (Hasql.Connection.release)
+                          S.release conn
+                          gpioInfo False
+                          putStrLn "Cleanup complete."
+                          exitSuccess
+                     -- install handlers for SIGINT (Ctrl-C) and SIGTERM
+                    _ <- installHandler keyboardSignal (Catch cleanup) Nothing
+                    _ <- installHandler sigTERM (Catch cleanup) Nothing
+
                     scotty 3000 $ do
                         middleware logStdoutDev
                         middleware (jwtAuthMiddleware conn)
