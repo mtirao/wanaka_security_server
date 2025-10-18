@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RpiDevice (gpioAlert, gpioInfo, gpioAlert) where
+module RpiDevice (gpioAlert, gpioInfo, gpioWarn) where
 
 import GPIO
 
