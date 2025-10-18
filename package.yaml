@@ -18,10 +18,8 @@ source-dirs:
 extra-source-files:
 - README.md
 extra-lib-dirs:
-- c_src
 - /usr/local/lib
 extra-libraries:
-- myfunc
 - bcm2835
 default-extensions:
 - DuplicateRecordFields
