@@ -69,7 +69,7 @@ main = do
             result <- S.acquire connSettings
             case result of
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
-                Right conn -> do 
+                Right conn -> do
                     mqttTid <- forkIO $ mqttSubscribe conn
                     _ <- gpioInfo True
                     let cleanup = do
