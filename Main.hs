@@ -24,7 +24,7 @@ import AuthenticationController
 import ProfileController
 import JwtAuth
 import Mqtt
-import GPIO
+import RpiDevice
 
 
 
@@ -68,6 +68,7 @@ main = do
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
                 Right conn -> do 
                     _ <- forkIO $ mqttSubscribe conn
+                    _ <- gpioWarn False
                     _ <- gpioInfo True
                     scotty 3000 $ do
                         middleware logStdoutDev
