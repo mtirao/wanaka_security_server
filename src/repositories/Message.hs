@@ -25,6 +25,8 @@ import Prelude hiding (filter, null)
 import Control.Monad.Trans.RWS (get)
 import MessageModel
 import ActivityModel
+    ( ActivityContent(Disarmed, Armed, ArmedStay, ArmedAway,
+                      ArmeCustom) )
 import Activity
 
 data Message f = Message
@@ -78,13 +80,6 @@ insert1 p u = insert $ Insert
             , onConflict = Abort
             }
 
-triggerAlert :: MessageType -> IO ()
-triggerAlert m = if m == Alert
-then do
-    -- Logic to trigger alert
-    putStrLn "Alert triggered"
-else do
-    putStrLn "No alert"
 
 isSystemArmed :: Connection -> IO Bool
 isSystemArmed conn = do

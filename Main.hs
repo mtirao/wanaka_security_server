@@ -49,10 +49,6 @@ makeDbConfig conf = do
                       <*> dbConfPassword
                       <*> dbConfHost
                       <*> dbConfPort
-
-gpioInfo = withGPIO $ do
-                setPinFunction Pin15 Output
-                writePin Pin15 True
                 
 
 main :: IO ()
@@ -72,7 +68,7 @@ main = do
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
                 Right conn -> do 
                     _ <- forkIO $ mqttSubscribe conn
-                    _ <- gpioInfo
+                    _ <- gpioInfo True
                     scotty 3000 $ do
                         middleware logStdoutDev
                         middleware (jwtAuthMiddleware conn)
