@@ -1,22 +1,28 @@
 {
     "configurations": [
         {
-            "type": "swift",
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
             "request": "launch",
+            "program": "${workspaceFolder}/c_src/a.out",
             "args": [],
-            "cwd": "${workspaceFolder:wanaka_security_server}",
-            "name": "Debug swiftCLITool",
-            "program": "${workspaceFolder:wanaka_security_server}/.build/debug/swiftCLITool",
-            "preLaunchTask": "swift: Build Debug swiftCLITool"
-        },
-        {
-            "type": "swift",
-            "request": "launch",
-            "args": [],
-            "cwd": "${workspaceFolder:wanaka_security_server}",
-            "name": "Release swiftCLITool",
-            "program": "${workspaceFolder:wanaka_security_server}/.build/release/swiftCLITool",
-            "preLaunchTask": "swift: Build Release swiftCLITool"
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

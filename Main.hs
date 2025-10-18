@@ -24,7 +24,7 @@ import AuthenticationController
 import ProfileController
 import JwtAuth
 import Mqtt
-import MyFFI
+import GPIO
 
 
 
@@ -50,11 +50,13 @@ makeDbConfig conf = do
                       <*> dbConfHost
                       <*> dbConfPort
 
+gpioInfo = withGPIO $ do
+                setPinFunction Pin15 Output
+                writePin Pin15 True
+                
 
 main :: IO ()
 main = do
-    gpio <- gpioAlert True  -- Example usage of the FFI function
-    _ <- print ("GPIO Alert returned: " <> show gpio)
     loadedConf <- C.load [C.Required "application.conf"]
     dbConf <- makeDbConfig loadedConf
     case dbConf of
@@ -70,6 +72,7 @@ main = do
                 Left err -> putStrLn $ "Error acquiring connection: " ++ show err
                 Right conn -> do 
                     _ <- forkIO $ mqttSubscribe conn
+                    _ <- gpioInfo
                     scotty 3000 $ do
                         middleware logStdoutDev
                         middleware (jwtAuthMiddleware conn)
