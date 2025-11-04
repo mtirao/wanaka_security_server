@@ -4,7 +4,6 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module TenantsModel where
-
 import Data.Text 
 import Data.Aeson
 
@@ -24,3 +23,16 @@ instance ToJSON TenantResponse where
             "userid" .= userId,
             "status" .= status
         ]                           
+
+-- Login Response
+data TenantRequest = TenantRequest { user :: Text
+    , password :: Text
+    } deriving (Show)
+
+
+instance FromJSON TenantRequest where
+    parseJSON (Object v) = TenantRequest <$>
+        v .: "user" <*>
+        v .: "password" 
+
+                            

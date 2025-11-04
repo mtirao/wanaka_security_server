@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ProfileControllerSQLLite where
+module ProfileController where
 
 import ProfileModel
 
 import Views ( jsonResponse )
-import ProfileSQLLite 
+import Profile 
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -28,37 +28,43 @@ import GHC.Int
 import Network.HTTP.Types.Status
 
 import ErrorMessage
-
+import SQLModel
 
 --- PROFILE
 getProfile conn =  do
         userId <- header "x-user-id"
         case userId of
             Nothing -> do
-                jsonResponse (ErrorMessage "User ID not provided")
+                jsonResponse $ ErrorMessage "User ID not provided"
                 status badRequest400
             Just uid -> do
                 let uid' = TL.toStrict uid
                 liftIO $ print ("Getting profile for user: " <> show uid')
                 result <- liftIO $ findProfile conn uid'
                 case result of
-                    [] -> do
-                        jsonResponse (ErrorMessage "User not found")
-                        status notFound404
-                    [a] -> status ok200
-                        --jsonResponse $ toProfileDTO a
+                    Left (ProfileNotFound id) -> do
+                        status status404
+                        jsonResponse $ ErrorMessage $ "Profile not found: " <> id
+                    Left (DatabaseError err) -> do
+                        status status500
+                        jsonResponse $ ErrorMessage $ "Database error: " <> (T.pack $ show err)
+                    Right profile -> jsonResponse profile
                                                  
 
 createProfile body conn =  do
         b <- body
         uuid <- liftIO nextRandom
-        let profileId = Just $ T.pack $ show uuid
+        userId <- header "x-user-id"
         let profile = (decode b :: Maybe ProfileModel) 
         case profile of
             Nothing -> status badRequest400
             Just a -> do                   
-                result <- liftIO $ insertProfile conn a (fromMaybe "" profileId)
-                status noContent204
+                result <- liftIO $ insertProfile conn a uuid
+                case result of
+                    Left (DatabaseError err) -> do
+                        status status500
+                        jsonResponse $ ErrorMessage $ "Database error: " <> (T.pack $ show err)
+                    Right _ -> status noContent204
                                                 
 
 -- deleteUserProfile conn =  do

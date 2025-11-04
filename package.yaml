@@ -39,7 +39,6 @@ dependencies:
 - scotty
 - bytestring
 - text
-- postgresql-simple
 - sqlite-simple
 - aeson
 - transformers
@@ -58,9 +57,6 @@ dependencies:
 - warp
 - bytestring-conversion
 - jose-jwt
-- hasql
-- hasql-pool
-- rel8
 - uuid
 - base-prelude
 - net-mqtt

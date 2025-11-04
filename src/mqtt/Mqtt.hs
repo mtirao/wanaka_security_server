@@ -9,7 +9,7 @@ import GHC.Int
 import Data.Time.Clock.POSIX (getPOSIXTime, utcTimeToPOSIXSeconds)
 import Data.Time.Clock (getCurrentTime)
 import Data.UUID.V4 (nextRandom)
-import MessageSQLLite
+import Message
 import MessageModel
 import qualified Data.ByteString.Lazy as BL
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
@@ -31,7 +31,7 @@ msgReceived conn _ topic message property = do
     result <- insertMessage conn msgContent
     putStrLn $ "Received message on topic: " ++ show topicName ++ " with payload: " ++ show message ++ " at time: " ++ show posixTime
     --systemArmed <- liftIO $ isSystemArmed conn
-    let systemArmed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN SQLLITE
+    let systemArmed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN 
     if systemArmed then do
         putStrLn "System is armed and alert message received. Triggering alert..."
         triggerAlert msgType

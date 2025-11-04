@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module AuthenticationControllerSQLLite(userAuthenticateSql) where
+module AuthenticationController(userAuthenticate) where
 
 
 import Web.Scotty.Internal.Types (ActionT)
@@ -22,27 +22,27 @@ import qualified Web.Scotty as WS
 
 import Control.Monad.IO.Class
 import TenantsModel
-import TenantSQLLite
+import Tenant
 import JwtAuth
 import Views
 import ErrorMessage
 import SQLModel
 
 
-userAuthenticateSql conn =  do
+userAuthenticate conn =  do
         h <- WS.header "Authorization"
         liftIO $ print ("Headers: " <> show h)
         case h >>= extractBasicAuth . T.encodeUtf8 . TL.toStrict of
             Just (user, password) -> do
                 let userText = T.decodeUtf8 user
                 let passwordText = T.decodeUtf8 password
+                liftIO $ print ("User: " <> show userText)
                 result <- liftIO $ findTenantByUsername conn userText
                 case result of
-                    [] -> do
-                            liftIO $ print result
-                            jsonResponse (ErrorMessage "User not found")
-                            WS.status forbidden403
-                    [tenant] -> WS.status unauthorized401
-                            --createJwt conn $ uuidToText tenant.userId
-                                            
-            Nothing -> WS.status unauthorized401
+                    Left _ -> WS.status forbidden403
+                    Right a -> if userPassword a /= passwordText
+                        then WS.status forbidden403
+                        else do
+                            liftIO $ print ("Authenticated user: " <> show userText)
+                            createJwt conn $ uuidToText (userId a)
+            Nothing -> WS.status unauthorized401 

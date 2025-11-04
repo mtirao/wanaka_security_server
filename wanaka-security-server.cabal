@@ -19,27 +19,24 @@ extra-source-files:
 executable wanaka-security-server
   main-is: Main.hs
   other-modules:
-      ActivityControllerSQLLite
-      AuthenticationControllerSQLLite
-      MessageControllerSQLLite
-      ProfileControllerSQLLite
-      StatusControllerSQLLite
+      ActivityController
+      AuthenticationController
+      MessageController
+      ProfileController
+      TenantController
       ActivityModel
       Database
       ErrorMessage
       MessageModel
       ProfileModel
-      StatusModel
+      SQLModel
       TenantsModel
       TokenModel
       Views
-      ActivitySQLLite
-      MessageSQLLite
-      ProfileSQLLite
-      SQLModel
-      StatusSQLLite
-      TenantSQLLite
-      TokenSQLLite
+      Activity
+      Message
+      Profile
+      Tenant
       JwtAuth
       Mqtt
       Paths_wanaka_security_server
@@ -69,16 +66,12 @@ executable wanaka-security-server
     , bytestring
     , bytestring-conversion
     , configurator
-    , hasql
-    , hasql-pool
     , http-types
     , jose-jwt
     , lens
     , lens-aeson
     , net-mqtt
     , network-uri
-    , postgresql-simple
-    , rel8
     , resource-pool
     , scotty
     , sqlite-simple

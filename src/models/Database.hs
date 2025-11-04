@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Database (initDB) where
+module Database (initDB, closeDB) where
 
 import Database.SQLite.Simple
 import qualified Database.SQLite.Simple as SQLite
@@ -9,7 +9,7 @@ initDB :: IO Connection
 initDB = do
     conn <- open "wanaka.db"
     mapM_ (execute_ conn) [createActivity, createMessage, createProfile, 
-                          createStatus, createRealm, createTenant, createToken]
+                          createStatus, createTenant]
     return conn
   where
     createActivity = Query $ mconcat
@@ -27,14 +27,18 @@ initDB = do
         , "type TEXT NOT NULL,"
         , "id TEXT PRIMARY KEY NOT NULL)"
         ]
-    
+
     createProfile = Query $ mconcat
         [ "CREATE TABLE IF NOT EXISTS profiles ("
-        , "username TEXT NOT NULL,"
-        , "password TEXT NOT NULL,"
+        , "cell_phone TEXT NOT NULL,"
         , "email TEXT NOT NULL,"
-        , "role TEXT NOT NULL,"
-        , "id TEXT PRIMARY KEY NOT NULL)"
+        , "first_name TEXT NOT NULL,"
+        , "last_name TEXT NOT NULL,"
+        , "phone TEXT NOT NULL,"
+        , "gender TEXT NOT NULL,"
+        , "address TEXT NOT NULL,"
+        , "city TEXT NOT NULL,"
+        , "user_id TEXT PRIMARY KEY NOT NULL)"
         ]
     
     createStatus = Query $ mconcat
@@ -44,25 +48,15 @@ initDB = do
         , "id TEXT PRIMARY KEY NOT NULL)"
         ]
     
-    createRealm = Query $ mconcat
-        [ "CREATE TABLE IF NOT EXISTS realms ("
-        , "name TEXT NOT NULL,"
-        , "description TEXT,"
-        , "id TEXT PRIMARY KEY NOT NULL)"
-        ]
-    
     createTenant = Query $ mconcat
         [ "CREATE TABLE IF NOT EXISTS tenants ("
-        , "name TEXT NOT NULL,"
-        , "realm_id TEXT NOT NULL,"
-        , "id TEXT PRIMARY KEY NOT NULL,"
-        , "FOREIGN KEY(realm_id) REFERENCES realms(id))"
-        ]
-    
-    createToken = Query $ mconcat
-        [ "CREATE TABLE IF NOT EXISTS tokens ("
-        , "token TEXT NOT NULL,"
+        , "username TEXT PRIMARY KEY NOT NULL,"
+        , "password TEXT NOT NULL,"
         , "user_id TEXT NOT NULL,"
-        , "expiry INTEGER NOT NULL,"
-        , "id TEXT PRIMARY KEY NOT NULL)"
+        , "created_at INTEGER NOT NULL,"
+        , "status TEXT NOT NULL)"
         ]
+
+-- Close the database connection
+closeDB :: Connection -> IO ()
+closeDB conn = SQLite.close conn    

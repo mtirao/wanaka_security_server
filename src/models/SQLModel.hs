@@ -13,6 +13,15 @@ import Data.UUID.V4 (nextRandom)
 import Data.Text (Text, pack)
 
 
+-- Define possible errors
+data DBError 
+    = ProfileNotFound Text
+    | TenantNotFound Text
+    | MessageNotFound UUID
+    | ActivityNotFound UUID
+    | DatabaseError SQLError
+    deriving (Show)
+
 -- Add FromField instance for UUID
 instance FromField UUID where
     fromField f = do

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageControllerSQLLite(createMessage, getMessage, getMessageAll, getSystemStatus) where
+module MessageController(createMessage, getMessage, getMessageAll, getSystemStatus) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -25,17 +25,17 @@ import GHC.Int
 
 import ErrorMessage
 import Views
-import MessageSQLLite
-import ActivitySQLLite
+import Message
+import Activity
 
 import MessageModel
-
+import SQLModel
 
 --- MESSAGE
 
 getSystemStatus conn = do
     --armed <- liftIO $ isSystemArmed conn
-    let armed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN SQLLITE
+    let armed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN 
     if armed
         then do
             jsonResponse (SuccessMessage "System is armed")
@@ -48,22 +48,25 @@ getMessageAll conn = do
                         liftIO $ print "Fetching all messages"
                         result <- liftIO $ findMessageAll conn
                         case result of
-                                [] -> do
-                                        jsonResponse (ErrorMessage "Messages not found")
-                                        status notFound404
-                                a -> do
-                                        status ok200
-                                        --jsonResponse $ map toMessageDTO a
+                            Left err -> do
+                                    jsonResponse (ErrorMessage "Messages not found")
+                                    status notFound404
+                            Right msgs -> do
+                                    status ok200
+                                    jsonResponse msgs
 
 getMessage u conn = do
-                        result <- liftIO $ findMessage u conn
+                        result <- liftIO $ findMessage conn u 
                         case result of
-                                [] -> do
-                                        jsonResponse (ErrorMessage "User not found")
-                                        status notFound404
-                                [a] -> do
-                                        status ok200
-                                        --jsonResponse $ toMessageDTO a
+                            Left (MessageNotFound id) -> do
+                                    jsonResponse (ErrorMessage "Message not found")
+                                    status notFound404
+                            Left (DatabaseError err) -> do
+                                    status status500
+                                    jsonResponse $ ErrorMessage $ "Database error: " <> (pack $ show err)
+                            Right a -> do
+                                    status ok200
+                                    jsonResponse $ a
 
 createMessage conn =  do
     bodyContent <- body
@@ -73,16 +76,21 @@ createMessage conn =  do
             currentTime <- liftIO  getCurrentTime
             let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
             let message = MessageModel (messageContent req) posixTime (messageType req) Nothing
-            uuid <- liftIO $ insertMessage conn message
-            --systemArmed <- liftIO $ isSystemArmed conn
-            let systemArmed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN SQLLITE 
-            if systemArmed
-            then do
-                liftIO $ putStrLn $ "Alerting system with message type: " ++ show req.messageType
-                jsonResponse $ SuccessMessage $ pack $ toString uuid
-                status status201
-            else do
-                jsonResponse (ErrorMessage "System is not armed")
+            result <- liftIO $ insertMessage conn message
+            case result of
+                Left (DatabaseError err) -> do
+                    status status500
+                    jsonResponse $ ErrorMessage $ "Database error: " <> (pack $ show err)
+                Right uuid -> do
+                    --systemArmed <- liftIO $ isSystemArmed conn
+                    let systemArmed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN  
+                    if systemArmed
+                    then do
+                        liftIO $ putStrLn $ "Alerting system with message type: " ++ show req.messageType
+                        jsonResponse $ SuccessMessage $ pack $ toString uuid
+                        status status201
+                    else do
+                        jsonResponse (ErrorMessage "System is not armed")
               
         Nothing -> do
             -- If the body cannot be parsed as MessageRequest, return an error
