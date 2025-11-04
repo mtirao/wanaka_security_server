@@ -10,7 +10,12 @@ import Data.Text
 import Data.Aeson
 import GHC.Int
 import Data.UUID (UUID)
-
+import Database.SQLite.Simple.FromRow
+import Database.SQLite.Simple.FromField
+import Database.SQLite.Simple.ToRow
+import Database.SQLite.Simple.ToField
+import Database.SQLite.Simple.Ok
+import SQLModel
 
 -- Profile
 data ProfileModel = ProfileModel
@@ -22,7 +27,7 @@ data ProfileModel = ProfileModel
     , gender :: Text
     , address :: Text
     , city :: Text
-    , profileId :: Maybe Text  -- Assuming profileId is a UUID stored as Text
+    , profileId :: Maybe UUID  -- Assuming profileId is a UUID stored as Text
     } deriving (Show)
 
 instance ToJSON ProfileModel where
@@ -49,3 +54,10 @@ instance FromJSON ProfileModel where
         v .: "address" <*>
         v .: "city" <*>
         v .:? "profileId"
+
+instance FromRow ProfileModel where
+    fromRow = ProfileModel <$> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field <*> field     
+
+instance ToRow ProfileModel where
+    toRow m = toRow (cellPhone m, email m, firstName m, lastName m, phone m, gender m, address m, city m, profileId m)
+

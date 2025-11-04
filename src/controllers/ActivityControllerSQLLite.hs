@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ActivityController(createActivity, getActivity, getActivityAll) where
+module ActivityControllerSQLLite(createActivity, getActivity, getActivityAll) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -24,7 +24,7 @@ import GHC.Int
 
 import ErrorMessage
 import Views
-import Activity
+import ActivitySQLLite
 import ActivityModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
@@ -33,21 +33,24 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 getActivity msgId conn = do
     result <- liftIO $ findActivity msgId conn
     case result of
-        Right [] -> do
+        [] -> do
                 jsonResponse (ErrorMessage "Activity not found")
                 status notFound404
-        Right [a] -> do
-                jsonResponse $ toActivityDTO a
-    
+        [a] -> do
+                status ok200
+                --jsonResponse $ toActivityDTO a
+
+
 getActivityAll conn = do
     result <- liftIO $ findActivityAll conn
     case result of
-        Right [] -> do
+        [] -> do
             jsonResponse (ErrorMessage "No activities found")
             status notFound404
-        Right activities -> do
-            jsonResponse $ map toActivityDTO activities
-    
+        activities -> do
+            status ok200
+            --jsonResponse $ map toActivityDTO activities
+
 createActivity conn =  do
     bodyContent <- body
     let messageRequest = decode bodyContent :: Maybe ActivityModel
@@ -56,14 +59,10 @@ createActivity conn =  do
             currentTime <- liftIO  getCurrentTime
             let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
             let activity = ActivityModel (activityContent req) posixTime (activityUserId req) Nothing
-            result <- liftIO $ insertActivity activity conn
-            case result of
-                Right [uuid] -> do
-                    jsonResponse $ SuccessMessage $ pack $ toString uuid
-                    status status201
-                Left err -> do
-                    jsonResponse (ErrorMessage "Error inserting activity")
-                    status internalServerError500
+            uuid <- liftIO $ insertActivity conn activity
+            jsonResponse $ SuccessMessage $ pack $ toString uuid
+            status status201
+               
         Nothing -> do
             -- If the body cannot be parsed as MessageRequest, return an error
             jsonResponse (ErrorMessage "Invalid activity request format")

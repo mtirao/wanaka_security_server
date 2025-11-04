@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageController(createMessage, getMessage, getMessageAll, getSystemStatus) where
+module MessageControllerSQLLite(createMessage, getMessage, getMessageAll, getSystemStatus) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -18,21 +18,24 @@ import qualified Data.ByteString.Lazy.Internal as BL
 import qualified Data.ByteString.Internal as BI
 import qualified Data.Text.Encoding as T
 import Control.Monad.IO.Class
+import Control.Monad.Trans.Class (MonadTrans(lift))
+import Control.Lens.Internal.TH (prismTypeName)
+
 import GHC.Int
+
 import ErrorMessage
 import Views
-import Message
-import MessageModel
-import Control.Monad.Trans.Class (MonadTrans(lift))
+import MessageSQLLite
+import ActivitySQLLite
 
-import Activity
-import Hasql.Decoders (custom)
-import Control.Lens.Internal.TH (prismTypeName)
+import MessageModel
+
 
 --- MESSAGE
 
 getSystemStatus conn = do
-    armed <- liftIO $ isSystemArmed conn
+    --armed <- liftIO $ isSystemArmed conn
+    let armed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN SQLLITE
     if armed
         then do
             jsonResponse (SuccessMessage "System is armed")
@@ -45,21 +48,22 @@ getMessageAll conn = do
                         liftIO $ print "Fetching all messages"
                         result <- liftIO $ findMessageAll conn
                         case result of
-                                Right [] -> do
+                                [] -> do
                                         jsonResponse (ErrorMessage "Messages not found")
                                         status notFound404
-                                Right a -> do
-                                        jsonResponse $ map toMessageDTO a
+                                a -> do
+                                        status ok200
+                                        --jsonResponse $ map toMessageDTO a
 
 getMessage u conn = do
                         result <- liftIO $ findMessage u conn
                         case result of
-                                Right [] -> do
+                                [] -> do
                                         jsonResponse (ErrorMessage "User not found")
                                         status notFound404
-                                Right [a] -> do
-                                        jsonResponse $ toMessageDTO a
-     
+                                [a] -> do
+                                        status ok200
+                                        --jsonResponse $ toMessageDTO a
 
 createMessage conn =  do
     bodyContent <- body
@@ -69,21 +73,17 @@ createMessage conn =  do
             currentTime <- liftIO  getCurrentTime
             let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
             let message = MessageModel (messageContent req) posixTime (messageType req) Nothing
-            result <- liftIO $ insertMessage message conn
-            case result of
-                Right [uuid] -> do 
-                    systemArmed <- liftIO $ isSystemArmed conn
-                    if systemArmed
-                    then do
-                        liftIO $ putStrLn $ "Alerting system with message type: " ++ show req.messageType
-                        jsonResponse $ SuccessMessage $ pack $ toString uuid
-                        status status201
-                    else do
-                        jsonResponse (ErrorMessage "System is not armed")
-                        status status201
-                Left err -> do
-                    jsonResponse (ErrorMessage "Error inserting message ")
-                    status internalServerError500
+            uuid <- liftIO $ insertMessage conn message
+            --systemArmed <- liftIO $ isSystemArmed conn
+            let systemArmed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN SQLLITE 
+            if systemArmed
+            then do
+                liftIO $ putStrLn $ "Alerting system with message type: " ++ show req.messageType
+                jsonResponse $ SuccessMessage $ pack $ toString uuid
+                status status201
+            else do
+                jsonResponse (ErrorMessage "System is not armed")
+              
         Nothing -> do
             -- If the body cannot be parsed as MessageRequest, return an error
             jsonResponse (ErrorMessage "Invalid message request format")

@@ -17,10 +17,6 @@ source-dirs:
 - src/util
 extra-source-files:
 - README.md
-extra-lib-dirs:
-- /usr/local/lib
-extra-libraries:
-- bcm2835
 default-extensions:
 - DuplicateRecordFields
 - DeriveAnyClass
@@ -44,6 +40,7 @@ dependencies:
 - bytestring
 - text
 - postgresql-simple
+- sqlite-simple
 - aeson
 - transformers
 - wai

@@ -19,12 +19,13 @@ extra-source-files:
 executable wanaka-security-server
   main-is: Main.hs
   other-modules:
-      ActivityController
-      AuthenticationController
-      MessageController
-      ProfileController
-      StatusController
+      ActivityControllerSQLLite
+      AuthenticationControllerSQLLite
+      MessageControllerSQLLite
+      ProfileControllerSQLLite
+      StatusControllerSQLLite
       ActivityModel
+      Database
       ErrorMessage
       MessageModel
       ProfileModel
@@ -32,17 +33,15 @@ executable wanaka-security-server
       TenantsModel
       TokenModel
       Views
-      Activity
-      Message
-      Profile
-      Realm
-      Status
-      Tenant
-      Token
+      ActivitySQLLite
+      MessageSQLLite
+      ProfileSQLLite
+      SQLModel
+      StatusSQLLite
+      TenantSQLLite
+      TokenSQLLite
       JwtAuth
       Mqtt
-      GPIO
-      RpiDevice
       Paths_wanaka_security_server
   hs-source-dirs:
       ./
@@ -62,10 +61,6 @@ executable wanaka-security-server
       TemplateHaskell
       QuasiQuotes
   ghc-options: -threaded -O2 -rtsopts -with-rtsopts=-N -Wno-deprecations -Wno-unused-imports -Wno-type-equality-out-of-scope -Wno-type-equality-requires-operators
-  extra-lib-dirs:
-      /usr/local/lib
-  extra-libraries:
-      bcm2835
   build-depends:
       MissingH
     , aeson
@@ -86,6 +81,7 @@ executable wanaka-security-server
     , rel8
     , resource-pool
     , scotty
+    , sqlite-simple
     , text
     , time
     , transformers

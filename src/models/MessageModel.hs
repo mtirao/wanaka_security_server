@@ -14,27 +14,31 @@ import Data.Aeson
 import GHC.Int
 import Data.UUID (UUID)
 import GHC.Generics (Generic)
-import Rel8 (DBType(..), ReadShow(..))
+import Database.SQLite.Simple.FromRow
+import Database.SQLite.Simple.FromField
+import Database.SQLite.Simple.ToRow
+import Database.SQLite.Simple.ToField
+import Database.SQLite.Simple.Ok
+import SQLModel
 
 data MessageType = Info | Fail | Warn | Alert
     deriving (Eq, Enum, Bounded, Generic)
     deriving stock (Read, Show)
-    deriving DBType via ReadShow MessageType
 
 
 instance FromJSON MessageType where
     parseJSON = withText "MessageType" $ \t -> case t of
-        "Info"  -> pure Info
-        "Error" -> pure Fail
-        "Warn"  -> pure Warn
-        "Alert" -> pure Alert
+        "INFO"  -> pure Info
+        "ERROR" -> pure Fail
+        "WARN"  -> pure Warn
+        "ALERT" -> pure Alert
         _       -> fail $ "Unknown MessageType: " ++ show t
 
 instance ToJSON MessageType where
-    toJSON Info  = String "Info"
-    toJSON Fail = String "Error"
-    toJSON Warn  = String "Warn"
-    toJSON Alert = String "Alert"
+    toJSON Info  = String "INFO"
+    toJSON Fail = String "ERROR"
+    toJSON Warn  = String "WARN"
+    toJSON Alert = String "ALERT"
 
 -- Message Request
 data MessageModel = MessageModel
@@ -60,14 +64,40 @@ instance ToJSON MessageModel where
         ]
 
 fromMessageType :: MessageType -> Text     
-fromMessageType Info  = "Info"
-fromMessageType Fail = "Error"
-fromMessageType Warn  = "Warn"
-fromMessageType Alert = "Alert"
+fromMessageType Info  = "INFO"
+fromMessageType Fail = "ERROR"
+fromMessageType Warn  = "WARN"
+fromMessageType Alert = "ALERT"
 
 toMessageType :: Text -> Maybe MessageType
-toMessageType "Info"  = Just Info
-toMessageType "Error" = Just Fail
-toMessageType "Warn"  = Just Warn
-toMessageType "Alert" = Just Alert
+toMessageType "INFO"  = Just Info
+toMessageType "ERROR" = Just Fail
+toMessageType "WARN"  = Just Warn
+toMessageType "ALERT" = Just Alert
 toMessageType _       = Nothing
+
+
+-- Add FromField instance for MessageType
+instance FromField MessageType where
+    fromField f = do
+        txt <- fromField f :: Ok Text
+        case txt of
+            "INFO"    -> return Info
+            "WARNING" -> return Warn
+            "FAIL"   -> return Fail
+            "ALERT"   -> return Alert
+            _        -> fail "Invalid MessageType in database"
+
+-- Add ToField instance for MessageType
+instance ToField MessageType where
+    toField Info    = toField ("INFO" :: Text)
+    toField Warn    = toField ("WARNING" :: Text)
+    toField Fail    = toField ("FAIL" :: Text)
+    toField Alert   = toField ("ALERT" :: Text)
+
+
+instance FromRow MessageModel where
+    fromRow = MessageModel <$> field <*> field <*> field <*> field
+
+instance ToRow MessageModel where
+    toRow m = toRow (messageContent m, messageDate m, messageType m, messageId m)

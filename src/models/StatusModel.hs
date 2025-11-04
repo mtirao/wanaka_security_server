@@ -9,7 +9,12 @@ import Data.Text
 import Data.Aeson
 import GHC.Int
 import Data.UUID (UUID)
-
+import Database.SQLite.Simple.FromRow
+import Database.SQLite.Simple.FromField
+import Database.SQLite.Simple.ToRow
+import Database.SQLite.Simple.ToField
+import Database.SQLite.Simple.Ok
+import SQLModel
 
 -- Activity Request
 data StatusModel = StatusModel
@@ -34,4 +39,9 @@ instance ToJSON StatusModel where
         , "statusDate" .= statusDate
         , "statusUserId" .= statusUserId
         ]
-                
+
+instance FromRow StatusModel where
+    fromRow = StatusModel<$> field <*> field <*> field <*> field    
+
+instance ToRow StatusModel where
+    toRow m = toRow (statusStatus m, statusDate m, statusUserId m, statusId m)               

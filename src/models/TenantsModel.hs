@@ -9,7 +9,6 @@ import Data.Text
 import Data.Aeson
 
 
-
 -- Login Response
 data TenantResponse = TenantResponse
     { 

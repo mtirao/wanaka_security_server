@@ -28,12 +28,11 @@ import Jose.Jwt (Jwt(Jwt), JwsHeader(JwsHeader))
 import Network.Wai.Middleware.HttpAuth
 import ErrorMessage
 import Views
-import qualified Token as Tkn
-import Realm
 import TokenModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
+import TokenSQLLite as Tkn
 
-import Hasql.Connection (Connection, ConnectionError, acquire, release, settings)
+import Database.SQLite.Simple
 import qualified Data.Maybe as Data
 
 
@@ -43,7 +42,7 @@ createJwt conn clientid = do
         let expDate = tokenExpiration curTime
         let token = buildToken clientid expDate
         liftIO $ print ("Creating token for client: " <>  show clientid <> " with expiration: " <> show expDate)
-        liftIO $ Tkn.insertToken token clientid conn
+        -- liftIO $ Tkn.insertToken token clientid conn
         jsonResponse (TokenResponse (buildToken clientid expDate) "JWT" "" )
 
 
@@ -59,25 +58,26 @@ jwtAuthMiddleware conn app req respond =
                             let tokenBs = TL.toStrict $ Data.Maybe.fromMaybe
                                     (TL.fromStrict (T.decodeUtf8 bs))
                                     (TL.stripPrefix "Bearer " (TL.fromStrict (T.decodeUtf8 bs)))
-                            result <- liftIO $ Tkn.findToken tokenBs conn
-                            liftIO $ print ("Checking token: " <> show (T.decodeUtf8 bs))
-                            case result of
-                                Left _ ->
-                                    respond $ responseLBS status401 [] "Unauthorized"
-                                Right token -> case token of
-                                    [] ->
-                                        respond $ responseLBS status401 [] "Unauthorized"
-                                    [t] -> do
-                                        let payload = decodeToken tokenBs
-                                        case payload of
-                                            Just (Payload user exp) -> do
-                                                curTime <- liftIO getPOSIXTime
-                                                if exp >= toInt64 curTime then do
-                                                    let userIdHeader = ("x-user-id", T.encodeUtf8 user)
-                                                    let req' = req { requestHeaders = userIdHeader : requestHeaders req }
-                                                    app req' respond
-                                                else 
-                                                    respond $ responseLBS status401 [] "Unauthorized"
+                            result <- liftIO $ Tkn.findToken conn tokenBs
+                            app req respond
+                            --liftIO $ print ("Checking token: " <> show (T.decodeUtf8 bs))
+                            -- case result of
+                            --     Left _ ->
+                            --         respond $ responseLBS status401 [] "Unauthorized"
+                            --     Right token -> case token of
+                            --         [] ->
+                            --             respond $ responseLBS status401 [] "Unauthorized"
+                            --         [t] -> do
+                            --             let payload = decodeToken tokenBs
+                            --             case payload of
+                            --                 Just (Payload user exp) -> do
+                            --                     curTime <- liftIO getPOSIXTime
+                            --                     if exp >= toInt64 curTime then do
+                            --                         let userIdHeader = ("x-user-id", T.encodeUtf8 user)
+                            --                         let req' = req { requestHeaders = userIdHeader : requestHeaders req }
+                            --                         app req' respond
+                            --                     else 
+                            --                         respond $ responseLBS status401 [] "Unauthorized"
                         _ ->
                             respond $ responseLBS status401 [] "Unauthorized"
 

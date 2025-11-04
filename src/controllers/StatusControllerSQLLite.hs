@@ -1,7 +1,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module StatusController(createStatus, getStatus) where
+module StatusControllerSQLLite where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -25,7 +25,7 @@ import GHC.Int
 
 import ErrorMessage
 import Views
-import Status
+import StatusSQLLite
 import StatusModel
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
@@ -33,13 +33,14 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 --- MESSAGE
 
 getStatus msgId conn = do
-                            result <- liftIO $ findStatus msgId conn
+                            result <- liftIO $ findStatus conn msgId
                             case result of
-                                    Right [] -> do
+                                    [] -> do
                                             jsonResponse (ErrorMessage "Status not found")
                                             status notFound404
-                                    Right [a] -> do
-                                            jsonResponse $ toStatusDTO a
+                                    [a] -> do
+                                            status ok200
+                                            --jsonResponse $ toStatusDTO a
     
 
 createStatus conn =  do
@@ -50,14 +51,9 @@ createStatus conn =  do
             currentTime <- liftIO  getCurrentTime
             let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
             let statuss = StatusModel (statusStatus req) posixTime (statusUserId req) Nothing
-            result <- liftIO $ insertStatus statuss conn
-            case result of
-                Right [uuid] -> do
-                    jsonResponse $ SuccessMessage $ pack $ toString uuid
-                    status status201
-                Left err -> do
-                    jsonResponse (ErrorMessage "Error inserting status")
-                    status internalServerError500
+            result <- liftIO $ insertStatus conn statuss
+            --jsonResponse $ SuccessMessage $ pack $ toString uuid
+            status status201
         Nothing -> do
             -- If the body cannot be parsed as MessageRequest, return an error
             jsonResponse (ErrorMessage "Invalid status request format")
