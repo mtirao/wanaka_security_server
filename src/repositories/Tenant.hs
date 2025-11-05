@@ -19,14 +19,14 @@ data Tenant = Tenant { userName :: Text
     , userPassword :: Text
     , userId :: UUID
     , createdAt :: Int64
-    , status :: Text
+    , statusTenant :: Text
     } deriving (Show)
 
 instance FromRow Tenant where
     fromRow = Tenant <$> field <*> field <*> field <*> field <*> field  
 
 instance ToRow Tenant where
-    toRow t = toRow (userName t, userPassword t, userId t, createdAt t, status t)
+    toRow t = toRow (userName t, userPassword t, userId t, createdAt t, statusTenant t)
 
     
 findTenantByUsername :: Connection -> Text -> IO (Either DBError Tenant)

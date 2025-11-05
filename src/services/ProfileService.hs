@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ProfileController where
+module ProfileService where
 
 import ProfileModel
 
@@ -21,6 +21,7 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Time.Clock.POSIX
 import Data.UUID.V4 (nextRandom)
+import Data.UUID (toText, fromText)
 import Data.Maybe
 import Data.Aeson
 import GHC.Int
@@ -32,39 +33,52 @@ import SQLModel
 
 --- PROFILE
 getProfile conn =  do
-        userId <- header "x-user-id"
-        case userId of
-            Nothing -> do
-                jsonResponse $ ErrorMessage "User ID not provided"
-                status badRequest400
-            Just uid -> do
-                let uid' = TL.toStrict uid
-                liftIO $ print ("Getting profile for user: " <> show uid')
-                result <- liftIO $ findProfile conn uid'
-                case result of
-                    Left (ProfileNotFound id) -> do
-                        status status404
-                        jsonResponse $ ErrorMessage $ "Profile not found: " <> id
-                    Left (DatabaseError err) -> do
-                        status status500
-                        jsonResponse $ ErrorMessage $ "Database error: " <> (T.pack $ show err)
-                    Right profile -> jsonResponse profile
+    userId <- header "x-user-id"
+    case userId of
+        Nothing -> do
+            jsonResponse $ ErrorMessage "User ID not provided"
+            status badRequest400
+        Just uid -> do
+            let uid' = TL.toStrict uid
+            liftIO $ print ("Getting profile for user: " <> show uid')
+            case fromText uid' of
+                Nothing -> do
+                    jsonResponse $ ErrorMessage "Invalid User ID format"
+                    status badRequest400
+                Just uuid -> do
+                    result <- liftIO $ findProfile conn uuid
+                    case result of
+                        Left (ProfileNotFound id) -> do
+                            status status404
+                            jsonResponse $ ErrorMessage $ "Profile not found: " <> (toText id)
+                        Left (DatabaseError err) -> do
+                            status status500
+                            jsonResponse $ ErrorMessage $ "Database error: " <> (T.pack $ show err)
+                        Right profile -> jsonResponse profile
                                                  
 
 createProfile body conn =  do
-        b <- body
-        uuid <- liftIO nextRandom
-        userId <- header "x-user-id"
-        let profile = (decode b :: Maybe ProfileModel) 
-        case profile of
-            Nothing -> status badRequest400
-            Just a -> do                   
-                result <- liftIO $ insertProfile conn a uuid
-                case result of
-                    Left (DatabaseError err) -> do
-                        status status500
-                        jsonResponse $ ErrorMessage $ "Database error: " <> (T.pack $ show err)
-                    Right _ -> status noContent204
+    b <- body
+    userId <- header "x-user-id"
+    let profile = (decode b :: Maybe ProfileModel) 
+    case userId of
+        Nothing -> do
+            jsonResponse $ ErrorMessage "User ID not provided"
+            status badRequest400
+        Just uid -> do
+            let uid'= TL.toStrict uid
+            case fromText uid' of
+                Nothing -> status badRequest400
+                Just uuid -> do   
+                    case profile of
+                        Nothing -> status badRequest400
+                        Just profile' -> do                
+                            result <- liftIO $ insertProfile conn profile' uuid
+                            case result of
+                                Left (DatabaseError err) -> do
+                                    status status500
+                                    jsonResponse $ ErrorMessage $ "Database error: " <> (T.pack $ show err)
+                                Right _ -> status noContent204
                                                 
 
 -- deleteUserProfile conn =  do

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageController(createMessage, getMessage, getMessageAll, getSystemStatus) where
+module MessageService(createMessage, getMessage, getMessageAll, getSystemStatus) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -45,28 +45,28 @@ getSystemStatus conn = do
             status badRequest400
     
 getMessageAll conn = do
-                        liftIO $ print "Fetching all messages"
-                        result <- liftIO $ findMessageAll conn
-                        case result of
-                            Left err -> do
-                                    jsonResponse (ErrorMessage "Messages not found")
-                                    status notFound404
-                            Right msgs -> do
-                                    status ok200
-                                    jsonResponse msgs
+    liftIO $ print "Fetching all messages"
+    result <- liftIO $ findMessageAll conn
+    case result of
+        Left err -> do
+                jsonResponse (ErrorMessage "Messages not found")
+                status notFound404
+        Right msgs -> do
+                status ok200
+                jsonResponse msgs
 
 getMessage u conn = do
-                        result <- liftIO $ findMessage conn u 
-                        case result of
-                            Left (MessageNotFound id) -> do
-                                    jsonResponse (ErrorMessage "Message not found")
-                                    status notFound404
-                            Left (DatabaseError err) -> do
-                                    status status500
-                                    jsonResponse $ ErrorMessage $ "Database error: " <> (pack $ show err)
-                            Right a -> do
-                                    status ok200
-                                    jsonResponse $ a
+    result <- liftIO $ findMessage conn u 
+    case result of
+        Left (MessageNotFound id) -> do
+                jsonResponse (ErrorMessage "Message not found")
+                status notFound404
+        Left (DatabaseError err) -> do
+                status status500
+                jsonResponse $ ErrorMessage $ "Database error: " <> (pack $ show err)
+        Right a -> do
+                status ok200
+                jsonResponse $ a
 
 createMessage conn =  do
     bodyContent <- body

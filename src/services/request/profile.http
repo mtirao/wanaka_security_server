@@ -1,0 +1,14 @@
+POST http://localhost:3000/api/wanaka/profile HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NjMyMDcyMDEsInVzZXIiOiIyOTcyMmMxZi0xOTIwLTQzMjctOTM2OC02MjY3OTBjYTY0YjYifQ.OjONy1Rwc-bGP2sL5VA-ZpzRZAQUwsKfEXNOoTSlvp8
+
+{
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "marcos.tirao@icloud.com",
+    "cellphone": "34675397563",
+    "phone": "",
+    "gender": "",
+    "address": "",
+    "city": ""
+}

@@ -19,11 +19,11 @@ extra-source-files:
 executable wanaka-security-server
   main-is: Main.hs
   other-modules:
-      ActivityController
-      AuthenticationController
-      MessageController
-      ProfileController
-      TenantController
+      ActivityService
+      AuthenticationService
+      MessageService
+      ProfileService
+      TenantService
       ActivityModel
       Database
       ErrorMessage
@@ -42,7 +42,7 @@ executable wanaka-security-server
       Paths_wanaka_security_server
   hs-source-dirs:
       ./
-      src/controllers
+      src/services
       src/models
       src/views
       src/repositories

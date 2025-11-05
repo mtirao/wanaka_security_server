@@ -1,15 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ActivityController(createActivity, getActivity, getActivityAll) where
+module ActivityService(createActivity, getActivity, getActivityAll, removeActivity) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
 import Web.Scotty.Trans (ScottyT, get, json, put)
 import Network.Wai
 import Network.HTTP.Types.Status
-import Data.Time
 import Data.Aeson (FromJSON, ToJSON, encode, decode)
-import Data.Time.Clock.POSIX
 import Data.Text (Text, unpack, pack)
 import Data.UUID (UUID, toString)
 import qualified Data.Text.Lazy as TL
@@ -30,8 +28,8 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 import SQLModel
 
 --- ACTIVITY
-getActivity msgId conn = do
-    result <- liftIO $ findActivity msgId conn
+getActivity conn msgId = do
+    result <- liftIO $ findActivity conn msgId
     case result of
         Left (ActivityNotFound id) -> do
                 jsonResponse (ErrorMessage "Activity not found")
@@ -43,6 +41,15 @@ getActivity msgId conn = do
                 status ok200
                 jsonResponse $ a
 
+removeActivity conn msgId = do
+    result <- liftIO $ deleteActivity conn msgId
+    case result of
+        Left (DatabaseError err) -> do
+                status status500
+                jsonResponse $ ErrorMessage $ "Database error: " <> (pack $ show err)
+        Right a -> do
+                status ok200
+                jsonResponse $ a
 
 getActivityAll conn = do
     result <- liftIO $ findActivityAll conn
@@ -59,10 +66,7 @@ createActivity conn =  do
     bodyContent <- body
     let messageRequest = decode bodyContent :: Maybe ActivityModel
     case messageRequest of
-        Just req -> do
-            currentTime <- liftIO  getCurrentTime
-            let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
-            let activity = ActivityModel (activityContent req) posixTime (activityUserId req) Nothing
+        Just activity -> do
             result <- liftIO $ insertActivity conn activity
             case result of
                 Left (DatabaseError err) -> do

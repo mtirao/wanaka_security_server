@@ -28,33 +28,31 @@ data ActivityContent = Armed | ArmedStay | ArmedAway | ArmedCustom | Disarmed
 
 instance FromJSON ActivityContent where
     parseJSON = withText "ActivityContent" $ \t -> case t of
-        "Armed"       -> pure Armed
-        "ArmedStay"  -> pure ArmedStay
-        "ArmedAway"  -> pure ArmedAway
-        "ArmedCustom"-> pure ArmedCustom
-        "Disarmed"  -> pure Disarmed -- Assuming disarmed is treated as Armed
+        "ARMED"  -> pure Armed
+        "STAY"  -> pure ArmedStay
+        "AWAY"  -> pure ArmedAway
+        "CUSTOM"-> pure ArmedCustom
+        "DISARMED"  -> pure Disarmed -- Assuming disarmed is treated as Armed
         _             -> fail $ "Unknown ActivityContent: " ++ show t
 
 instance ToJSON ActivityContent where
-    toJSON Armed       = String "Armed"
-    toJSON ArmedStay  = String "ArmedStay"
-    toJSON ArmedAway  = String "ArmedAway"
-    toJSON ArmedCustom = String "ArmedCustom" 
-    toJSON Disarmed   = String "Disarmed"
+    toJSON Armed       = String "ARMED"
+    toJSON ArmedStay  = String "STAY"
+    toJSON ArmedAway  = String "AWAY"
+    toJSON ArmedCustom = String "CUSTOM" 
+    toJSON Disarmed   = String "DISARMED"
 
 -- Activity Request
 data ActivityModel = ActivityModel
     { activityContent :: ActivityContent
-    , activityDate :: Int64
-    , activityUserId :: UUID
+    , activityDate :: Maybe Int64
     , activityId :: Maybe UUID
     } deriving (Show)
 
 instance FromJSON ActivityModel where
     parseJSON (Object v) = ActivityModel <$>
         v .: "activityContent" <*>
-        v .: "activityDate" <*>
-        v .: "activityUserId" <*>
+        v .:? "activityDate" <*>
         v .:? "activityId"
 
 
@@ -63,20 +61,19 @@ instance ToJSON ActivityModel where
         [ "activityId" .= activityId
         , "activityContent" .= activityContent
         , "activityDate" .= activityDate
-        , "activityUserId" .= activityUserId
         ]
 
 fromContentType :: ActivityContent -> Text  
-fromContentType  Armed       = "armed"
-fromContentType  ArmedStay  = "armed_stay"
-fromContentType  ArmedAway  = "armed_away"
-fromContentType  ArmedCustom = "armed_custom"        
+fromContentType  Armed       = "ARMED"
+fromContentType  ArmedStay  = "STAY"
+fromContentType  ArmedAway  = "AWAY"
+fromContentType  ArmedCustom = "CUSTOM"        
 
 toContentType :: Text -> Maybe ActivityContent
-toContentType  "armed"       = Just Armed
-toContentType  "armed_stay"  = Just ArmedStay
-toContentType  "armed_away"  = Just ArmedAway
-toContentType  "armed_custom"= Just ArmedCustom
+toContentType  "ARMED"       = Just Armed
+toContentType  "STAY"  = Just ArmedStay
+toContentType  "AWAY"  = Just ArmedAway
+toContentType  "CUSTOM"= Just ArmedCustom
 toContentType  _             = Nothing        
 
 
@@ -101,7 +98,7 @@ instance ToField ActivityContent  where
     toField Disarmed   = toField ("DISARMED" :: Text)
 
 instance FromRow ActivityModel where
-    fromRow = ActivityModel <$> field <*> field <*> field <*> field
+    fromRow = ActivityModel <$> field <*> field <*> field
 
 instance ToRow ActivityModel where
-    toRow m = toRow (activityContent m, activityDate m, activityUserId m, activityId m)
+    toRow m = toRow (activityContent m, activityDate m, activityId m)

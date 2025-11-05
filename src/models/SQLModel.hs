@@ -15,7 +15,7 @@ import Data.Text (Text, pack)
 
 -- Define possible errors
 data DBError 
-    = ProfileNotFound Text
+    = ProfileNotFound UUID
     | TenantNotFound Text
     | MessageNotFound UUID
     | ActivityNotFound UUID

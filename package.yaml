@@ -8,7 +8,7 @@ license: BSD3
 homepage: https://github.com/mtirao/wanaka_token#readme
 source-dirs:
 - .
-- src/controllers
+- src/services
 - src/models
 - src/views
 - src/repositories

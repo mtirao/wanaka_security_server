@@ -17,7 +17,7 @@ import SQLModel
 import Control.Exception (try)
 
 
-findProfile :: Connection -> Text -> IO (Either DBError ProfileModel)
+findProfile :: Connection -> UUID -> IO (Either DBError ProfileModel)
 findProfile conn id = do
     result <- try $ query conn "SELECT cell_phone, email, first_name, last_name, phone, gender, address, city, user_id FROM profiles WHERE user_id = ?" (Only id)  
     case result of

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module AuthenticationController(userAuthenticate) where
+module AuthenticationService(userAuthenticate) where
 
 
 import Web.Scotty.Internal.Types (ActionT)

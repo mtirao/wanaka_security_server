@@ -15,11 +15,11 @@ import System.Exit (ExitCode(ExitSuccess))
 
 import qualified Data.Text.Lazy as TL
 
-import MessageController
-import ActivityController
-import AuthenticationController
-import ProfileController
-import TenantController
+import MessageService
+import ActivityService
+import AuthenticationService
+import ProfileService
+import TenantService
 import JwtAuth
 import Database
 import Mqtt
@@ -61,6 +61,10 @@ main = do
             getActivity conn uuid
         get "/api/wanaka/activity" $ getActivityAll conn
         post "/api/wanaka/activity" $ createActivity conn
+        delete "/api/wanaka/activity/:id" $ do
+            idd <- param "id" :: ActionM TL.Text
+            let uuid = read (TL.unpack idd) :: UUID
+            removeActivity conn uuid
 
         -- AUTHENTICATION
         post "/api/wanaka/accounts/login" $ userAuthenticate conn

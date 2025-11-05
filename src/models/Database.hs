@@ -14,9 +14,8 @@ initDB = do
   where
     createActivity = Query $ mconcat
         [ "CREATE TABLE IF NOT EXISTS activities ("
-        , "activity TEXT NOT NULL,"
+        , "content TEXT NOT NULL,"
         , "date INTEGER NOT NULL,"
-        , "user_id TEXT NOT NULL,"
         , "id TEXT PRIMARY KEY NOT NULL)"
         ]
     
