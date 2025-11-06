@@ -48,6 +48,7 @@ deleteActivity conn actid = do
 
 insertActivity :: Connection -> ActivityModel -> IO (Either DBError UUID)
 insertActivity conn act = do
+    _ <- execute conn "DELETE FROM  activities" ()
     uuid <- nextRandom
     currentTime <- liftIO getCurrentTime
     let query = "INSERT INTO activities (content, date, id) VALUES (?,?,?)"

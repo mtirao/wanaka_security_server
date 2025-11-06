@@ -12,6 +12,7 @@ import Data.Aeson (FromJSON, ToJSON, encode, decode)
 import Data.Time.Clock.POSIX
 import Data.Text (Text, unpack, pack)
 import Data.UUID (UUID, toString)
+
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TL
 import qualified Data.ByteString.Lazy.Internal as BL
@@ -20,6 +21,8 @@ import qualified Data.Text.Encoding as T
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import Control.Lens.Internal.TH (prismTypeName)
+
+import Database.SQLite.Simple (Connection)
 
 import GHC.Int
 
@@ -96,4 +99,5 @@ createMessage conn =  do
             -- If the body cannot be parsed as MessageRequest, return an error
             jsonResponse (ErrorMessage "Invalid message request format")
             status badRequest400
+
     

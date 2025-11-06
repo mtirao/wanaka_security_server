@@ -22,6 +22,7 @@ executable wanaka-security-server
       ActivityService
       AuthenticationService
       MessageService
+      MqttService
       ProfileService
       TenantService
       ActivityModel

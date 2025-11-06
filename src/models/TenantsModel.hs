@@ -4,6 +4,7 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module TenantsModel where
+    
 import Data.Text 
 import Data.Aeson
 

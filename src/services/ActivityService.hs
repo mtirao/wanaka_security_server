@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ActivityService(createActivity, getActivity, getActivityAll, removeActivity) where
+module ActivityService(createActivity, getActivity, getActivityAll, removeActivity, isSystemArmed) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -80,5 +80,19 @@ createActivity conn =  do
             -- If the body cannot be parsed as MessageRequest, return an error
             jsonResponse (ErrorMessage "Invalid activity request format")
             status badRequest400
-    
 
+checkArmedCondition :: ActivityModel -> Bool
+checkArmedCondition activity = case activity.activityContent of
+                                    Armed       -> True
+                                    ArmedStay   -> True
+                                    ArmedAway   -> True
+                                    ArmedCustom -> True
+                                    _           -> False
+
+isSystemArmed conn = do
+    result <- findActivityAll conn
+    case result of
+        Left err -> return False
+        Right acts -> do
+            let armedActivities = filter (\a -> checkArmedCondition a) acts
+            return $ not (null armedActivities)

@@ -20,14 +20,17 @@ import ActivityService
 import AuthenticationService
 import ProfileService
 import TenantService
+import MqttService
 import JwtAuth
 import Database
 import Mqtt
 
+
 main :: IO ()
 main = do
     conn <- initDB
-    mqttTid <- forkIO $ mqttSubscribe conn
+    let messageHandler = insertNewMessage conn
+    mqttTid <- forkIO $ mqttSubscribe messageHandler
 
     let cleanup = do
             putStrLn "Shutting down..."

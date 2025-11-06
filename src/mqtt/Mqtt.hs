@@ -9,14 +9,19 @@ import GHC.Int
 import Data.Time.Clock.POSIX (getPOSIXTime, utcTimeToPOSIXSeconds)
 import Data.Time.Clock (getCurrentTime)
 import Data.UUID.V4 (nextRandom)
+import Data.UUID (UUID)
+import Data.Text (Text)
+import Database.SQLite.Simple (Connection)
 import Message
 import MessageModel
+import SQLModel
 import qualified Data.ByteString.Lazy as BL
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 import Control.Monad.IO.Class
 import Control.Monad.Trans.Class (MonadTrans(lift))
 
-msgReceived conn _ topic message property = do
+
+msgReceived clousure _ topic message property = do
     let topicName = unTopic topic  -- Convert ByteString to String
     currentTime <- getCurrentTime
     let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
@@ -28,28 +33,17 @@ msgReceived conn _ topic message property = do
                     "warn"  -> Warn
                     _       -> Info
     let msgContent = MessageModel (decodeUtf8 $ BL.toStrict message) posixTime msgType (Just uuid)
-    result <- insertMessage conn msgContent
-    putStrLn $ "Received message on topic: " ++ show topicName ++ " with payload: " ++ show message ++ " at time: " ++ show posixTime
-    --systemArmed <- liftIO $ isSystemArmed conn
-    let systemArmed = True -- TEMPORARY FIX UNTIL IMPLEMENTING SYSTEM STATUS IN 
-    if systemArmed then do
-        putStrLn "System is armed and alert message received. Triggering alert..."
-        triggerAlert msgType
-    else
-        putStrLn "No alert triggered."
-
-triggerAlert :: MessageType -> IO ()
-triggerAlert m = if m == Alert
-    then do
-        putStrLn "Alert triggered"
-    else do
-        putStrLn "No alert"
+    result <- clousure msgContent
+    case result of
+        Right id -> putStrLn $ "Message stored: " ++ show id
+        _ -> putStrLn $ "Error storing message"
 
 
---mqttSubscribe :: Connection -> IO ()
-mqttSubscribe conn = do 
+
+mqttSubscribe :: (MessageModel -> IO (Either DBError Text)) -> IO ()
+mqttSubscribe clousure = do 
     let (Just uri) = parseURI "mqtt://localhost:1883"
-    mc <- connectURI mqttConfig{_msgCB=SimpleCallback $ msgReceived conn} uri
+    mc <- connectURI mqttConfig{_msgCB=SimpleCallback $ msgReceived clousure} uri
     print =<< subscribe mc [("alert", subOptions), ("fail", subOptions), ("info", subOptions), ("warn", subOptions)] []
     waitForClient mc   -- wait for the the client to disconnect
 
