@@ -9,7 +9,7 @@ initDB :: IO Connection
 initDB = do
     conn <- open "wanaka.db"
     mapM_ (execute_ conn) [createActivity, createMessage, createProfile, 
-                          createStatus, createTenant]
+                          createStatus, createTenant, createSensor, createZones]
     return conn
   where
     createActivity = Query $ mconcat
@@ -55,6 +55,28 @@ initDB = do
         , "created_at INTEGER NOT NULL,"
         , "status TEXT NOT NULL)"
         ]
+    
+    createSensor = Query $ mconcat
+        [ "CREATE TABLE IF NOT EXISTS sensors ("
+        , "sensor_id TEXT PRIMARY KEY NOT NULL,"
+        , "type TEXT NOT NULL,"
+        , "location TEXT NOT NULL,"
+        , "status TEXT NOT NULL)"
+        ]
+
+    createZones = Query $ mconcat
+        [ "CREATE TABLE IF NOT EXISTS zones ("
+        , "zone_id TEXT PRIMARY KEY NOT NULL,"
+        , "name TEXT NOT NULL,"
+        , "state TEXT NOT NULL)"
+        ]
+    
+    createRelation = Query $ mconcat
+        [ "CREATE TABLE IF NOT EXISTS relations ("
+        , "zone_id TEXT NOT NULL,"
+        , "sensor_id TEXT NOT NULL)"
+        ]
+
 
 -- Close the database connection
 closeDB :: Connection -> IO ()

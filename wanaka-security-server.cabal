@@ -24,20 +24,29 @@ executable wanaka-security-server
       MessageService
       MqttService
       ProfileService
+      RelationService
+      SensorService
       TenantService
+      ZoneService
       ActivityModel
       Database
       ErrorMessage
       MessageModel
       ProfileModel
+      RelationModel
+      SensorModel
       SQLModel
       TenantsModel
       TokenModel
+      ZoneModel
       Views
       Activity
       Message
       Profile
+      Relation
+      Sensor
       Tenant
+      Zone
       JwtAuth
       Mqtt
       Paths_wanaka_security_server

@@ -15,6 +15,7 @@ import GHC.Int (Int64)
 import SQLModel
 import Control.Exception (try)
 
+
 data Tenant = Tenant { userName :: Text
     , userPassword :: Text
     , userId :: UUID

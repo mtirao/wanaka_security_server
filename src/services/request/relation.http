@@ -1,0 +1,8 @@
+POST http://localhost:3000/api/wanaka/relation HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NjMyMDcyMDEsInVzZXIiOiIyOTcyMmMxZi0xOTIwLTQzMjctOTM2OC02MjY3OTBjYTY0YjYifQ.OjONy1Rwc-bGP2sL5VA-ZpzRZAQUwsKfEXNOoTSlvp8
+
+{
+    "zone": "e18e45fe-28bd-4a75-a6a8-c51cd4d23a25",
+    "sensor": "80c9c350-6542-4893-8f9c-1304ad9bd65d"
+}

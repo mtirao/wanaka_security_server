@@ -21,6 +21,9 @@ import AuthenticationService
 import ProfileService
 import TenantService
 import MqttService
+import SensorService
+import ZoneService
+import RelationService
 import JwtAuth
 import Database
 import Mqtt
@@ -76,4 +79,16 @@ main = do
         -- PROFILE
         get "/api/wanaka/profile" $ getProfile conn
         post "/api/wanaka/profile" $ createProfile body conn
+
+        -- SENSOR
+        get "/api/wanaka/sensor" $ getSensorAll conn
+        post "/api/wanaka/sensor" $ createSensor conn
+
+        -- ZONE
+        get "/api/wanaka/zone" $ getZoneAll conn
+        post "/api/wanaka/zone" $ createZone conn
+
+        -- RELATION
+        get "/api/wanaka/relation" $ getRelationAll conn
+        post "/api/wanaka/relation" $ createRelation conn
     

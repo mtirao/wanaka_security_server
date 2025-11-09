@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module MessageService(createMessage, getMessage, getMessageAll) where
+module SensorService(createSensor, getSensorAll) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -28,47 +28,29 @@ import GHC.Int
 
 import ErrorMessage
 import Views
-import Message
-import Activity
 
-import MessageModel
+import Sensor
+import SensorModel
 import SQLModel
 
---- MESSAGE
-    
-getMessageAll conn = do
-    liftIO $ print "Fetching all messages"
-    result <- liftIO $ findMessageAll conn
+
+getSensorAll conn = do
+    liftIO $ print "Fetching all Sensors"
+    result <- liftIO $ findSensorAll conn
     case result of
         Left err -> do
-                jsonResponse (ErrorMessage "Messages not found")
+                jsonResponse (ErrorMessage "Sensors not found")
                 status notFound404
-        Right msgs -> do
+        Right sensor -> do
                 status ok200
-                jsonResponse msgs
+                jsonResponse sensor
 
-getMessage u conn = do
-    result <- liftIO $ findMessage conn u 
-    case result of
-        Left (MessageNotFound id) -> do
-                jsonResponse (ErrorMessage "Message not found")
-                status notFound404
-        Left (DatabaseError err) -> do
-                status status500
-                jsonResponse $ ErrorMessage $ "Database error: " <> (pack $ show err)
-        Right a -> do
-                status ok200
-                jsonResponse $ a
-
-createMessage conn =  do
+createSensor conn =  do
     bodyContent <- body
-    let messageRequest = decode bodyContent :: Maybe MessageModel
-    case messageRequest of
-        Just req -> do
-            currentTime <- liftIO  getCurrentTime
-            let posixTime = round (utcTimeToPOSIXSeconds currentTime) :: Int64
-            let message = MessageModel (messageContent req) posixTime (messageType req) Nothing
-            result <- liftIO $ insertMessage conn message
+    let sensorRequest = decode bodyContent :: Maybe SensorModel
+    case sensorRequest of
+        Just sensor -> do
+            result <- liftIO $ insertSensor conn sensor
             case result of
                 Left (DatabaseError err) -> do
                     status status500
@@ -79,7 +61,5 @@ createMessage conn =  do
               
         Nothing -> do
             -- If the body cannot be parsed as MessageRequest, return an error
-            jsonResponse (ErrorMessage "Invalid message request format")
+            jsonResponse (ErrorMessage "Invalid Sensor request format")
             status badRequest400
-
-    

@@ -26,6 +26,15 @@ data MessageType = Info | Fail | Warn | Alert
     deriving stock (Read, Show)
 
 
+-- Message
+data MessageModel = MessageModel
+    { messageContent :: Text
+    ,  messageDate :: Int64
+    ,  messageType :: MessageType
+    , messageId :: Maybe UUID
+    } deriving (Show)
+    
+
 instance FromJSON MessageType where
     parseJSON = withText "MessageType" $ \t -> case t of
         "INFO"  -> pure Info
@@ -40,13 +49,6 @@ instance ToJSON MessageType where
     toJSON Warn  = String "WARN"
     toJSON Alert = String "ALERT"
 
--- Message Request
-data MessageModel = MessageModel
-    { messageContent :: Text
-    ,  messageDate :: Int64
-    ,  messageType :: MessageType
-    , messageId :: Maybe UUID
-    } deriving (Show)
 
 instance FromJSON MessageModel where
     parseJSON (Object v) = MessageModel <$>

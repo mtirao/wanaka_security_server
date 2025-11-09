@@ -43,5 +43,7 @@ insertProfile conn profile userId = do
         , userId
         ) :: IO (Either SQLError ())
     case res of
-        Left err -> return $ Left $ DatabaseError (SQLError ErrorError "1" "Error inserting profile")
+        Left err -> do 
+            putStrLn $ show err
+            return $ Left $ DatabaseError (SQLError ErrorError "1" "")
         Right _ ->  return $ Right ()
