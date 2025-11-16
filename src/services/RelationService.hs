@@ -49,6 +49,7 @@ getRelationAll conn = do
 createRelation conn =  do
     bodyContent <- body
     let relationRequest = decode bodyContent :: Maybe RelationModel
+    liftIO $ putStrLn $ "Received Relation request: " ++ show relationRequest
     case relationRequest of
         Just zone -> do
             result <- liftIO $ insertRelation conn zone

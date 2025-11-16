@@ -24,9 +24,8 @@ data RelationModel = RelationModel
 
 
 instance FromJSON RelationModel where
-    parseJSON (Object v) = RelationModel <$>
-        v .: "sensor" <*>  
-        v .: "zone"
+    parseJSON = withObject "RelationModel" $ \param -> do
+        RelationModel <$> param .: "zone" <*> param .: "sensor"
         
 instance ToJSON RelationModel where
     toJSON (RelationModel {..}) = object

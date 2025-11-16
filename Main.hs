@@ -82,6 +82,10 @@ main = do
 
         -- SENSOR
         get "/api/wanaka/sensor" $ getSensorAll conn
+        get "/api/wanaka/sensor/zone/:zoneId" $ do
+            zoneIdParam <- param "zoneId" :: ActionM TL.Text
+            let zoneId = read (TL.unpack zoneIdParam) :: UUID
+            getSensorByZoneId conn zoneId
         post "/api/wanaka/sensor" $ createSensor conn
 
         -- ZONE

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SensorService(createSensor, getSensorAll) where
+module SensorService(createSensor, getSensorAll, getSensorByZoneId) where
 
 import Web.Scotty ( body, header, status, ActionM )
 import Web.Scotty.Internal.Types (ActionT)
@@ -44,6 +44,18 @@ getSensorAll conn = do
         Right sensor -> do
                 status ok200
                 jsonResponse sensor
+
+getSensorByZoneId conn zoneId = do
+    liftIO $ putStrLn $ "Fetching Sensors for Zone ID: " ++ show zoneId
+    result <- liftIO $ findSensorByZoneId conn zoneId
+    case result of
+        Left err -> do
+                jsonResponse (ErrorMessage "Sensors not found for the given Zone ID")
+                status notFound404
+        Right sensor -> do
+                status ok200
+                jsonResponse sensor 
+
 
 createSensor conn =  do
     bodyContent <- body

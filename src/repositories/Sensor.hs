@@ -26,6 +26,19 @@ findSensorAll conn = do
         Right msgs -> return $ Right msgs
 
 
+findSensorByZoneId :: Connection -> UUID -> IO (Either DBError [SensorModel])
+findSensorByZoneId conn zoneId = do
+    let q = "SELECT s.status, s.type, s.location, s.sensor_id \
+                \FROM relations \
+                \NATURAL JOIN zones \
+                \NATURAL JOIN sensors s \
+                \WHERE zone_id LIKE ?"
+    result <- try $ query conn q (Only zoneId)
+    case result of
+        Left err -> do 
+            putStrLn $ show err
+            return $ Left $ DatabaseError err
+        Right sensors -> return $ Right sensors
 
 insertSensor :: Connection -> SensorModel -> IO (Either DBError UUID)
 insertSensor conn sensor = do
